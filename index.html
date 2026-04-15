@@ -1,643 +1,1615 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>NND Hospital Clinical Analytics Platform</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<style>
-:root{--primary:#004a99;--pl:#0077cc;--pale:#e8f0fe;--teal:#0097a7;--ok:#16a34a;--warn:#d97706;--danger:#dc2626;--dark:#1a2a3a;--muted:#5a7a9a;--bg:#f0f4fa;--border:#dde8f5;--sw:230px}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--dark);font-size:14px;line-height:1.5}
-#login-screen{min-height:100vh;background:linear-gradient(135deg,#001f4d,#004a99 50%,#0077cc);display:flex;align-items:center;justify-content:center;padding:24px}
-.lcard{background:#fff;border-radius:16px;padding:36px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,74,153,.35)}
-.lhead{text-align:center;margin-bottom:24px}
-.lname{font-size:20px;font-weight:700;color:var(--primary);margin-top:6px}
-.lsub{color:var(--muted);font-size:13px}
-.lbadge{display:inline-block;margin-top:8px;padding:3px 12px;background:var(--pale);color:var(--primary);border-radius:20px;font-size:11px;font-weight:600}
-.lform{display:flex;flex-direction:column;gap:14px}
-.fg{display:flex;flex-direction:column;gap:5px}
-.fg label{font-weight:600;color:var(--dark);font-size:12px}
-.fg input,.fg select{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none;transition:border .2s}
-.fg input:focus,.fg select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,74,153,.1)}
-.req{color:var(--danger)}
-.hint{font-size:10px;color:var(--muted)}
-.lbtn{padding:11px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
-.lbtn:hover{background:var(--pl)}
-.lerr{padding:9px 13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:var(--danger);font-size:12px;display:none}
-.demo{margin-top:14px;padding:10px;background:var(--pale);border-radius:8px;font-size:11px;color:var(--muted);text-align:center;line-height:1.9}
-#app-shell{display:none}
-.layout{display:flex;min-height:100vh;padding-bottom:26px}
-.sidebar{width:var(--sw);background:var(--primary);position:fixed;left:0;top:0;bottom:0;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
-.sb-head{padding:18px 14px 14px;border-bottom:1px solid rgba(255,255,255,.15)}
-.sb-brand{font-size:18px;color:#fff;font-weight:700}
-.sb-loc{font-size:10px;color:rgba(255,255,255,.6);margin-top:2px}
-.sb-user{margin-top:10px;padding:8px 10px;background:rgba(255,255,255,.12);border-radius:8px;font-size:12px;color:rgba(255,255,255,.9)}
-.sb-uname{font-weight:600}
-.sb-urole{opacity:.75;font-size:10px;margin-top:2px}
-.sb-nav{flex:1;padding:10px 7px}
-.nb{width:100%;display:flex;align-items:center;gap:9px;padding:9px 11px;margin-bottom:3px;background:transparent;border:none;border-radius:7px;cursor:pointer;color:rgba(255,255,255,.7);font-size:12px;text-align:left}
-.nb:hover{background:rgba(255,255,255,.1);color:#fff}
-.nb.active{background:rgba(255,255,255,.18);color:#fff;font-weight:600}
-.nb-ico{font-size:14px;flex-shrink:0}
-.sb-foot{padding:10px 7px;border-top:1px solid rgba(255,255,255,.15)}
-.lout{width:100%;padding:8px 11px;background:rgba(220,38,38,.2);border:1px solid rgba(220,38,38,.4);border-radius:7px;color:#fca5a5;font-size:12px;cursor:pointer}
-.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column}
-.topbar{height:60px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:50}
-.tb-title{font-size:16px;font-weight:700;color:var(--primary)}
-.tb-sub{font-size:11px;color:var(--muted)}
-.tb-r{display:flex;align-items:center;gap:14px}
-.ldot{width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block;margin-right:4px;animation:blink 1.2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.llbl{font-size:11px;color:#16a34a;font-weight:600}
-.ttime{font-size:11px;color:var(--muted);text-align:right}
-.ttime b{color:var(--primary)}
-.body{padding:22px;flex:1}
-.page{display:none}
-.page.active{display:block}
-.ptitle{font-size:18px;font-weight:700;color:var(--primary);margin-bottom:4px}
-.psub{font-size:12px;color:var(--muted);margin-bottom:16px}
-.aitag{display:inline-block;padding:1px 7px;background:linear-gradient(135deg,#004a99,#0097a7);color:#fff;border-radius:10px;font-size:10px;font-weight:700;vertical-align:middle;margin-left:5px}
-.abar{border-radius:8px;padding:12px 16px;margin-bottom:14px;border:2px solid var(--danger);background:#fef2f2;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.3)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
-.at{font-weight:700;color:var(--danger);font-size:13px}
-.ab{font-size:12px;color:#7f1d1d;margin-top:4px}
-.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;margin-bottom:18px}
-.kpi{background:#fff;border-radius:10px;padding:15px;border-left:4px solid var(--primary);box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.kpi.dan{border-left-color:var(--danger);background:#fff8f8}
-.kpi.gd{border-left-color:var(--ok)}
-.ki{font-size:22px}
-.kl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;margin-top:6px}
-.kv{font-size:26px;font-weight:700;color:var(--primary);margin:3px 0}
-.kh{font-size:10px;color:var(--muted)}
-.card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:18px}
-.card h3{font-size:14px;font-weight:600;margin-bottom:3px}
-.csub{font-size:11px;color:var(--muted);margin-bottom:10px}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.cw{position:relative;height:200px}
-.bedbar{height:12px;border-radius:6px;display:flex;overflow:hidden;margin:10px 16px}
-.bstats{display:flex;justify-content:space-around;padding:14px 0}
-.bv{font-size:28px;font-weight:700;text-align:center}
-.bl{font-size:12px;color:var(--muted);margin-top:3px;text-align:center}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:var(--pale);color:var(--primary);padding:7px 10px;text-align:left;font-weight:600;font-size:12px}
-td{padding:7px 10px;border-bottom:1px solid var(--border)}
-tr.wr{background:#fffbeb}
-.badge{padding:3px 8px;border-radius:10px;font-size:11px;font-weight:500}
-.bg{background:#dcfce7;color:#166534}
-.bb{background:var(--pale);color:var(--primary)}
-.br{background:#fee2e2;color:#991b1b}
-.by{background:#fef3c7;color:#92400e}
-.wear{display:flex;align-items:center;gap:6px}
-.wf{height:7px;border-radius:4px;min-width:4px}
-.hmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:10px;margin-top:10px}
-.hc{border-radius:9px;padding:12px;text-align:center}
-.hv{font-size:22px;font-weight:700}
-.hn{font-size:11px;font-weight:600;margin-bottom:2px}
-.hs{font-size:10px;opacity:.8}
-.insig{padding:10px 14px;background:#fffbeb;border-left:4px solid var(--warn);font-size:12px;margin-top:12px;border-radius:0 6px 6px 0}
-.vtcard{background:#fff;border-radius:10px;padding:15px;box-shadow:0 2px 8px rgba(0,0,0,.05);margin-bottom:12px;border-left:4px solid var(--ok)}
-.vtcard.al{border-left-color:var(--danger);background:#fff8f8}
-.vtcard.med{border-left-color:var(--warn)}
-.vrow{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
-.vbs{display:flex;gap:8px;flex-wrap:wrap}
-.vb{text-align:center;padding:8px 12px;border-radius:8px;background:var(--pale);min-width:68px}
-.vb.bad{background:#fef2f2}
-.vbv{font-size:18px;font-weight:700;color:var(--primary)}
-.vbv.bad{color:var(--danger)}
-.vbl{font-size:9px;color:var(--muted)}
-.spark{margin-top:8px;height:36px;display:flex;align-items:flex-end;gap:2px}
-.sb2{width:8px;border-radius:2px 2px 0 0;background:var(--pl)}
-.sb2.al{background:var(--danger)}
-.pobtn{padding:3px 9px;background:var(--danger);color:#fff;border:none;border-radius:5px;font-size:11px;cursor:pointer}
-.posent{font-size:11px;color:var(--ok);font-weight:600}
-.wmark{position:fixed;bottom:0;left:0;right:0;text-align:center;padding:5px;background:rgba(0,74,153,.05);border-top:1px solid var(--border);font-size:10px;color:var(--muted);z-index:200}
-.bt-ctrl{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.bt-status{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:#f3f4f6;color:#6b7280}
-.bt-status.connected{background:#dcfce7;color:#166534}
-.bt-status.scanning{background:#fef3c7;color:#92400e}
-.bt-status.error{background:#fee2e2;color:#991b1b}
-.bt-btn{padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
-.bt-btn:hover{background:var(--pl)}
-.bt-btn:disabled{opacity:0.6;cursor:not-allowed}
-.toast{position:fixed;bottom:20px;right:20px;padding:12px 16px;background:#1f2937;color:#fff;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);font-size:12px;z-index:1000;animation:slideIn 0.3s ease;display:none;max-width:300px}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.toast.show{display:block}
-@media(max-width:900px){.g2{grid-template-columns:1fr}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>NND Hospital Clinical Analytics Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #004a99;
+      --pl: #0077cc;
+      --pale: #e8f0fe;
+      --teal: #0097a7;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --dark: #1a2a3a;
+      --muted: #5a7a9a;
+      --bg: #f0f4fa;
+      --border: #dde8f5;
+      --sw: 230px
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      font-size: 14px;
+      line-height: 1.5
+    }
+
+    #login-screen {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #001f4d, #004a99 50%, #0077cc);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px
+    }
+
+    .lcard {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 60px rgba(0, 74, 153, .35)
+    }
+
+    .lhead {
+      text-align: center;
+      margin-bottom: 24px
+    }
+
+    .lname {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 6px
+    }
+
+    .lsub {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .lbadge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 12px;
+      background: var(--pale);
+      color: var(--primary);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600
+    }
+
+    .lform {
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 5px
+    }
+
+    .fg label {
+      font-weight: 600;
+      color: var(--dark);
+      font-size: 12px
+    }
+
+    .fg input,
+    .fg select {
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border .2s
+    }
+
+    .fg input:focus,
+    .fg select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 74, 153, .1)
+    }
+
+    .req {
+      color: var(--danger)
+    }
+
+    .hint {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .lbtn {
+      padding: 11px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    .lbtn:hover {
+      background: var(--pl)
+    }
+
+    .lerr {
+      padding: 9px 13px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      color: var(--danger);
+      font-size: 12px;
+      display: none
+    }
+
+    .demo {
+      margin-top: 14px;
+      padding: 10px;
+      background: var(--pale);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.9
+    }
+
+    #app-shell {
+      display: none
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      padding-bottom: 26px
+    }
+
+    .sidebar {
+      width: var(--sw);
+      background: var(--primary);
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      overflow-y: auto
+    }
+
+    .sb-head {
+      padding: 18px 14px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, .15)
+    }
+
+    .sb-brand {
+      font-size: 18px;
+      color: #fff;
+      font-weight: 700
+    }
+
+    .sb-loc {
+      font-size: 10px;
+      color: rgba(255, 255, 255, .6);
+      margin-top: 2px
+    }
+
+    .sb-user {
+      margin-top: 10px;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, .12);
+      border-radius: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .9)
+    }
+
+    .sb-uname {
+      font-weight: 600
+    }
+
+    .sb-urole {
+      opacity: .75;
+      font-size: 10px;
+      margin-top: 2px
+    }
+
+    .sb-nav {
+      flex: 1;
+      padding: 10px 7px
+    }
+
+    .nb {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 11px;
+      margin-bottom: 3px;
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, .7);
+      font-size: 12px;
+      text-align: left
+    }
+
+    .nb:hover {
+      background: rgba(255, 255, 255, .1);
+      color: #fff
+    }
+
+    .nb.active {
+      background: rgba(255, 255, 255, .18);
+      color: #fff;
+      font-weight: 600
+    }
+
+    .nb-ico {
+      font-size: 14px;
+      flex-shrink: 0
+    }
+
+    .sb-foot {
+      padding: 10px 7px;
+      border-top: 1px solid rgba(255, 255, 255, .15)
+    }
+
+    .lout {
+      width: 100%;
+      padding: 8px 11px;
+      background: rgba(220, 38, 38, .2);
+      border: 1px solid rgba(220, 38, 38, .4);
+      border-radius: 7px;
+      color: #fca5a5;
+      font-size: 12px;
+      cursor: pointer
+    }
+
+    .main {
+      margin-left: var(--sw);
+      flex: 1;
+      display: flex;
+      flex-direction: column
+    }
+
+    .topbar {
+      height: 60px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      position: sticky;
+      top: 0;
+      z-index: 50
+    }
+
+    .tb-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary)
+    }
+
+    .tb-sub {
+      font-size: 11px;
+      color: var(--muted)
+    }
+
+    .tb-r {
+      display: flex;
+      align-items: center;
+      gap: 14px
+    }
+
+    .ldot {
+      width: 8px;
+      height: 8px;
+      background: #16a34a;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 4px;
+      animation: blink 1.2s infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .llbl {
+      font-size: 11px;
+      color: #16a34a;
+      font-weight: 600
+    }
+
+    .ttime {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right
+    }
+
+    .ttime b {
+      color: var(--primary)
+    }
+
+    .body {
+      padding: 22px;
+      flex: 1
+    }
+
+    .page {
+      display: none
+    }
+
+    .page.active {
+      display: block
+    }
+
+    .ptitle {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px
+    }
+
+    .psub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 16px
+    }
+
+    .aitag {
+      display: inline-block;
+      padding: 1px 7px;
+      background: linear-gradient(135deg, #004a99, #0097a7);
+      color: #fff;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      vertical-align: middle;
+      margin-left: 5px
+    }
+
+    .abar {
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      border: 2px solid var(--danger);
+      background: #fef2f2;
+      animation: pulse 1.5s infinite
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, .3)
+      }
+
+      50% {
+        box-shadow: 0 0 0 6px rgba(220, 38, 38, 0)
+      }
+    }
+
+    .at {
+      font-weight: 700;
+      color: var(--danger);
+      font-size: 13px
+    }
+
+    .ab {
+      font-size: 12px;
+      color: #7f1d1d;
+      margin-top: 4px
+    }
+
+    .kgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px
+    }
+
+    .kpi {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      border-left: 4px solid var(--primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05)
+    }
+
+    .kpi.dan {
+      border-left-color: var(--danger);
+      background: #fff8f8
+    }
+
+    .kpi.gd {
+      border-left-color: var(--ok)
+    }
+
+    .ki {
+      font-size: 22px
+    }
+
+    .kl {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 6px
+    }
+
+    .kv {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 3px 0
+    }
+
+    .kh {
+      font-size: 10px;
+      color: var(--muted)
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+      margin-bottom: 18px
+    }
+
+    .card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 3px
+    }
+
+    .csub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px
+    }
+
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px
+    }
+
+    .cw {
+      position: relative;
+      height: 200px
+    }
+
+    .bedbar {
+      height: 12px;
+      border-radius: 6px;
+      display: flex;
+      overflow: hidden;
+      margin: 10px 16px
+    }
+
+    .bstats {
+      display: flex;
+      justify-content: space-around;
+      padding: 14px 0
+    }
+
+    .bv {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center
+    }
+
+    .bl {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+      text-align: center
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px
+    }
+
+    th {
+      background: var(--pale);
+      color: var(--primary);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 12px
+    }
+
+    td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    tr.wr {
+      background: #fffbeb
+    }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500
+    }
+
+    .bg {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .bb {
+      background: var(--pale);
+      color: var(--primary)
+    }
+
+    .br {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .by {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .wear {
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .wf {
+      height: 7px;
+      border-radius: 4px;
+      min-width: 4px
+    }
+
+    .hmap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
+      gap: 10px;
+      margin-top: 10px
+    }
+
+    .hc {
+      border-radius: 9px;
+      padding: 12px;
+      text-align: center
+    }
+
+    .hv {
+      font-size: 22px;
+      font-weight: 700
+    }
+
+    .hn {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 2px
+    }
+
+    .hs {
+      font-size: 10px;
+      opacity: .8
+    }
+
+    .insig {
+      padding: 10px 14px;
+      background: #fffbeb;
+      border-left: 4px solid var(--warn);
+      font-size: 12px;
+      margin-top: 12px;
+      border-radius: 0 6px 6px 0
+    }
+
+    .vtcard {
+      background: #fff;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+      margin-bottom: 12px;
+      border-left: 4px solid var(--ok)
+    }
+
+    .vtcard.al {
+      border-left-color: var(--danger);
+      background: #fff8f8
+    }
+
+    .vtcard.med {
+      border-left-color: var(--warn)
+    }
+
+    .vrow {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .vbs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .vb {
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: var(--pale);
+      min-width: 68px
+    }
+
+    .vb.bad {
+      background: #fef2f2
+    }
+
+    .vbv {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary)
+    }
+
+    .vbv.bad {
+      color: var(--danger)
+    }
+
+    .vbl {
+      font-size: 9px;
+      color: var(--muted)
+    }
+
+    .spark {
+      margin-top: 8px;
+      height: 36px;
+      display: flex;
+      align-items: flex-end;
+      gap: 2px
+    }
+
+    .sb2 {
+      width: 8px;
+      border-radius: 2px 2px 0 0;
+      background: var(--pl)
+    }
+
+    .sb2.al {
+      background: var(--danger)
+    }
+
+    .pobtn {
+      padding: 3px 9px;
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 11px;
+      cursor: pointer
+    }
+
+    .posent {
+      font-size: 11px;
+      color: var(--ok);
+      font-weight: 600
+    }
+
+    .wmark {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 5px;
+      background: rgba(0, 74, 153, .05);
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--muted);
+      z-index: 200
+    }
+
+    .bt-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .05);
+      flex-wrap: wrap
+    }
+
+    .bt-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f3f4f6;
+      color: #6b7280
+    }
+
+    .bt-status.connected {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .bt-status.scanning {
+      background: #fef3c7;
+      color: #92400e
+    }
+
+    .bt-status.error {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .bt-status.simulated {
+      background: #ede9fe;
+      color: #5b21b6
+    }
+
+    .bt-btn {
+      padding: 8px 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .bt-btn:hover {
+      background: var(--pl)
+    }
+
+    .bt-btn.sim {
+      background: #7c3aed
+    }
+
+    .bt-btn.sim:hover {
+      background: #6d28d9
+    }
+
+    .bt-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed
+    }
+
+    .bt-unsupported {
+      background: #fef3c7;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #92400e;
+      margin-bottom: 12px;
+      display: none
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      background: #1f2937;
+      color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+      font-size: 12px;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      display: none;
+      max-width: 300px
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1
+      }
+    }
+
+    .toast.show {
+      display: block
+    }
+
+    @media(max-width:900px) {
+      .g2 {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<div id="login-screen">
-  <div class="lcard">
-    <div class="lhead">
-      <div style="font-size:44px">🏥</div>
-      <div class="lname">NND Hospital</div>
-      <div class="lsub">Salem, Tamil Nadu</div>
-      <div class="lbadge">Clinical Analytics Platform</div>
-    </div>
-    <div class="lform">
-      <div class="fg"><label>Role <span class="req">*</span></label>
-        <select id="irole" onchange="onRC()">
-          <option value="">— Select role —</option>
-          <option value="manager">Hospital Manager</option>
-          <option value="doctor">Doctor</option>
-          <option value="receptionist">Receptionist</option>
-          <option value="pharmacy">Pharmacy In-charge</option>
-        </select>
+  <div id="login-screen">
+    <div class="lcard">
+      <div class="lhead">
+        <div style="font-size:44px">🏥</div>
+        <div class="lname">NND Hospital</div>
+        <div class="lsub">Salem, Tamil Nadu</div>
+        <div class="lbadge">Clinical Analytics Platform</div>
       </div>
-      <div class="fg"><label>Department <span class="req">*</span></label>
-        <select id="idept"><option value="">— Select role first —</option></select>
+      <div class="lform">
+        <div class="fg"><label>Role <span class="req">*</span></label>
+          <select id="irole" onchange="onRC()">
+            <option value="">— Select role —</option>
+            <option value="manager">Hospital Manager</option>
+            <option value="doctor">Doctor</option>
+            <option value="receptionist">Receptionist</option>
+            <option value="pharmacy">Pharmacy In-charge</option>
+          </select>
+        </div>
+        <div class="fg"><label>Department <span class="req">*</span></label>
+          <select id="idept">
+            <option value="">— Select role first —</option>
+          </select>
+        </div>
+        <div class="fg"><label>Work Email <span class="req">*</span></label>
+          <input type="email" id="iemail" placeholder="dept.role@nndhospital.org" />
+          <span class="hint">e.g. hospital.manager@nndhospital.org</span>
+        </div>
+        <div class="fg"><label>Password <span class="req">*</span></label>
+          <input type="password" id="ipw" placeholder="••••••••" />
+        </div>
+        <div class="lerr" id="lerr"></div>
+        <button class="lbtn" onclick="doLogin()">🔐 Sign In to Dashboard</button>
       </div>
-      <div class="fg"><label>Work Email <span class="req">*</span></label>
-        <input type="email" id="iemail" placeholder="dept.role@nndhospital.org"/>
-        <span class="hint">e.g. hospital.manager@nndhospital.org</span>
-      </div>
-      <div class="fg"><label>Password <span class="req">*</span></label>
-        <input type="password" id="ipw" placeholder="••••••••"/>
-      </div>
-      <div class="lerr" id="lerr"></div>
-      <button class="lbtn" onclick="doLogin()">🔐 Sign In to Dashboard</button>
-    </div>
-    <div class="demo">
-      <strong>Demo — password: demo123</strong><br>
-      Manager: hospital.manager@nndhospital.org<br>
-      Doctor: cardiology.doctor@nndhospital.org<br>
-      Pharmacy: pharmacy.incharge@nndhospital.org
-    </div>
-  </div>
-</div>
-
-<div id="app-shell">
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="sb-head">
-        <div class="sb-brand">🏥 NND</div>
-        <div class="sb-loc">NND Hospital</div>
-        <div class="sb-user">
-          <div class="sb-uname" id="sbname">—</div>
-          <div class="sb-urole" id="sbrole">—</div>
-        </div>
-      </div>
-      <nav class="sb-nav" id="sbnav"></nav>
-      <div class="sb-foot"><button class="lout" onclick="doLogout()">🚪 Sign Out</button></div>
-    </aside>
-    <div class="main">
-      <div class="topbar">
-        <div>
-          <div class="tb-title" id="tbtitle">Dashboard</div>
-          <div class="tb-sub">NND Hospital — Salem, Tamil Nadu</div>
-        </div>
-        <div class="tb-r">
-          <span class="llbl"><span class="ldot"></span>LIVE</span>
-          <div class="ttime"><div id="tval">—</div><b>Salem, TN</b></div>
-        </div>
-      </div>
-      <div class="body">
-
-        <!-- OVERVIEW -->
-        <div class="page" id="page-overview">
-          <div class="ptitle">Operations Overview <span class="aitag">AI</span></div>
-          <div class="psub">Real-time hospital metrics · Auto-refreshes every 5 s</div>
-          <div class="abar"><div class="at">🚨 Critical Alerts Active (3)</div><div class="ab">ICU Ventilator-01 — wear 91% (overdue) &nbsp;|&nbsp; Dialysis-02 — 95% wear &nbsp;|&nbsp; SpO₂ alert: P-1103 (ICU-1)</div></div>
-          <div class="kgrid" id="kgrid"></div>
-          <div class="card">
-            <h3>🛏 Bed Capacity Snapshot</h3>
-            <div class="bstats">
-              <div><div class="bv" id="bedocc" style="color:var(--danger)">489</div><div class="bl">Occupied</div></div>
-              <div><div class="bv" style="color:var(--warn)">28</div><div class="bl">Sanitizing</div></div>
-              <div><div class="bv" style="color:var(--ok)">133</div><div class="bl">Available</div></div>
-            </div>
-            <div class="bedbar">
-              <div id="bbocc" style="background:var(--danger);width:75.2%"></div>
-              <div style="background:var(--warn);width:4.3%"></div>
-              <div style="background:var(--ok);flex:1"></div>
-            </div>
-            <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:5px">Total Capacity: 650 beds</div>
-          </div>
-          <div class="g2">
-            <div class="card"><h3>📈 Weekly Admissions vs Discharges</h3><div class="csub">Last 7 days</div><div class="cw"><canvas id="cadm"></canvas></div></div>
-            <div class="card"><h3>🦠 Disease Distribution</h3><div class="csub">Active in-patient diagnoses</div><div class="cw"><canvas id="cdis"></canvas></div></div>
-          </div>
-          <div class="g2">
-            <div class="card"><h3>👥 Age Distribution</h3><div class="cw"><canvas id="cage"></canvas></div></div>
-            <div class="card"><h3>📍 Patient Origin — Districts</h3><table style="margin-top:8px"><thead><tr><th>District</th><th>Patients</th><th>Share</th></tr></thead><tbody id="distb"></tbody></table></div>
-          </div>
-        </div>
-
-        <!-- TELEMETRY -->
-        <div class="page" id="page-telemetry">
-          <div class="ptitle">Live Patient Telemetry</div>
-          <div class="psub">IoT Wearable & Ward Sensor Integration — EWS Active · BLE/MQTT/Web Bluetooth</div>
-          
-          <!-- Bluetooth Control Panel -->
-          <div class="bt-ctrl">
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:4px">🔗 Smartwatch Integration</div>
-              <div style="font-size:11px;color:var(--muted)">Connect BLE Heart Rate Monitor for live vitals (Patient: Rajendran K.)</div>
-            </div>
-            <button class="bt-btn" id="btBtn" onclick="connectWatch()">
-              <span>📡</span> Connect Smartwatch
-            </button>
-            <div class="bt-status" id="btStatus">
-              <span>●</span> Disconnected
-            </div>
-          </div>
-
-          <div class="abar" id="ewsbar" style="display:none"><div class="at">🚨 Early Warning System Alert</div><div class="ab" id="ewsbody"></div></div>
-          <div id="tcards"></div>
-          <div class="card" style="background:var(--pale);box-shadow:none">
-            <strong style="color:var(--primary)">🤖 EWS Thresholds</strong>
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;font-size:12px">
-              <div>❤️ HR: &lt;50 or &gt;110 bpm</div><div>🫁 SpO₂: &lt;93%</div><div>🌡 Temp: &gt;38.5 °C</div>
-            </div>
-          </div>
-          <div class="card" style="margin-top:12px">
-            <h3>ℹ️ Bluetooth Connection Info</h3>
-            <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:6px">
-              • Requires HTTPS or localhost environment<br>
-              • Compatible with standard BLE Heart Rate straps (Polar, Garmin) or generic smartwatches broadcasting HR GATT Profile (0x180D)<br>
-              • Click "Connect Smartwatch" to pair device — browser will prompt for device selection<br>
-              • Real-time HR data will override simulation for Patient P-1042 (Rajendran K.)
-            </div>
-          </div>
-        </div>
-
-        <!-- DEPARTMENTS -->
-        <div class="page" id="page-departments">
-          <div class="ptitle">Department Analytics <span class="aitag">AI</span></div>
-          <div class="psub">Footfall heatmap, wait times & workforce gap analysis</div>
-          <div class="card"><h3>🗺 Department Footfall Heatmap</h3><div class="csub">Red = overcrowded · Yellow = near capacity · Green = OK</div><div class="hmap" id="hmap"></div></div>
-          <div class="g2">
-            <div class="card"><h3>📊 Patient Footfall</h3><div class="cw"><canvas id="cfoot"></canvas></div></div>
-            <div class="card"><h3>⏱ Wait Times (min)</h3><div class="cw"><canvas id="cwait"></canvas></div></div>
-          </div>
-          <div class="card">
-            <h3>👥 Staff-to-Patient Ratio <span class="aitag">AI</span></h3>
-            <table style="margin-top:8px"><thead><tr><th>Dept</th><th>Doctors</th><th>Nurses</th><th>Current</th><th>Required</th><th>Gap</th><th>Action</th></tr></thead><tbody id="stb"></tbody></table>
-            <div class="insig">⚠ <strong>Policy:</strong> Emergency dept critically understaffed (−12 nurses). ICU ratio below WHO guidelines. Recommend immediate contract nursing engagement.</div>
-          </div>
-        </div>
-
-        <!-- EQUIPMENT -->
-        <div class="page" id="page-equipment">
-          <div class="ptitle">Equipment & Bed Management <span class="aitag">AI</span></div>
-          <div class="psub">Live infrastructure tracking with predictive maintenance</div>
-          <div class="kgrid">
-            <div class="kpi"><div class="ki">🛏</div><div class="kl">Total Beds</div><div class="kv">650</div></div>
-            <div class="kpi dan"><div class="ki">🔴</div><div class="kl">Occupied</div><div class="kv" style="color:var(--danger)">489</div></div>
-            <div class="kpi"><div class="ki">🟡</div><div class="kl">Sanitizing</div><div class="kv" style="color:var(--warn)">28</div></div>
-            <div class="kpi gd"><div class="ki">🟢</div><div class="kl">Available</div><div class="kv" style="color:var(--ok)">133</div></div>
-          </div>
-          <div class="card">
-            <h3>🔧 Critical Equipment Status</h3>
-            <div style="overflow-x:auto;margin-top:8px">
-              <table><thead><tr><th>Equipment</th><th>Dept</th><th>Status</th><th>Usage</th><th>Wear</th><th>Next Maint</th><th>Action</th></tr></thead><tbody id="etb"></tbody></table>
-            </div>
-            <div class="insig">🤖 <strong>AI Alert:</strong> Dialysis-02 at 95% wear — breakdown probability in 48 h is 78%. Ventilator ICU-01 overdue. Recommend immediate engineer dispatch.</div>
-          </div>
-        </div>
-
-        <!-- PHARMACY -->
-        <div class="page" id="page-pharmacy">
-          <div class="ptitle">Pharmacy & Inventory <span class="aitag">AI</span></div>
-          <div class="psub">Stock levels, burn rates & automated Purchase Order generation</div>
-          <div class="abar"><div class="at">🚨 4 Critical Drugs Below 7-Day Threshold</div><div class="ab">Amlodipine 5mg (4.9d) · Ceftriaxone 1g (4.3d) · Heparin 5000IU (4.3d) · Dengvaxia Vaccine (3.7d)</div></div>
-          <div class="kgrid">
-            <div class="kpi"><div class="ki">💊</div><div class="kl">Drug SKUs</div><div class="kv">8</div></div>
-            <div class="kpi dan"><div class="ki">🚨</div><div class="kl">Critical Stock</div><div class="kv" style="color:var(--danger)">4</div><div class="kh">Below 7-day supply</div></div>
-            <div class="kpi"><div class="ki">📦</div><div class="kl">Daily Dispense</div><div class="kv">702</div><div class="kh">Units/day</div></div>
-            <div class="kpi gd"><div class="ki">🛒</div><div class="kl">Auto-POs Sent</div><div class="kv" id="poc" style="color:var(--ok)">0</div></div>
-          </div>
-          <div class="card">
-            <h3>📦 Medicine Stock & Burn Rate</h3>
-            <div style="overflow-x:auto;margin-top:8px">
-              <table><thead><tr><th>Medicine</th><th>Category</th><th>Stock</th><th>Daily Burn</th><th>Days Left</th><th>Status</th><th>Action</th></tr></thead><tbody id="ptb"></tbody></table>
-            </div>
-          </div>
-          <div class="card"><h3>📈 Daily Drug Burn Rate</h3><div class="cw"><canvas id="cphar"></canvas></div></div>
-          <div id="posuc" style="display:none;margin-top:12px;padding:12px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;color:#166534"></div>
-        </div>
-
-        <!-- STAFFING -->
-        <div class="page" id="page-staffing">
-          <div class="ptitle">Staffing & HR Analytics <span class="aitag">AI Predictor</span></div>
-          <div class="psub">Cross-references seasonal disease data & historical admissions</div>
-          <div class="card">
-            <h3>📅 AI Admission Forecast — Historical + 6-Month Projection</h3>
-            <div class="cw" style="height:240px"><canvas id="cfor"></canvas></div>
-            <div class="insig">🤖 <strong>AI Insight:</strong> Nov–Dec spike (dengue + respiratory season in Salem) requires 18 additional nurses & 6 doctors. Begin recruitment by September.</div>
-          </div>
-          <div class="card">
-            <h3>👥 Workforce Gap Analysis</h3>
-            <table style="margin-top:8px"><thead><tr><th>Dept</th><th>Doctors</th><th>Nurses</th><th>Current</th><th>Required</th><th>Gap</th><th>Priority</th></tr></thead><tbody id="stb2"></tbody></table>
-          </div>
-        </div>
-
-        <!-- RISK -->
-        <div class="page" id="page-risk">
-          <div class="ptitle">Readmission Risk Predictor <span class="aitag">AI + EHR</span></div>
-          <div class="psub">HL7/FHIR-compliant EHR history analysis · Post-discharge protocol planning</div>
-          <div class="abar"><div class="at">⚠ 5 Patients with High Readmission Risk Identified</div><div class="ab">Recommend discharge counselling, telehealth follow-up & medication compliance tracking.</div></div>
-          <div class="card">
-            <h3>🔁 High-Risk Readmission List</h3><div class="csub">Score &gt; 60 = High probability within 30 days of discharge</div>
-            <table><thead><tr><th>Patient</th><th>Dept</th><th>Score</th><th>Level</th><th>Clinical Reason</th><th>Recommended Action</th></tr></thead><tbody id="ritb"></tbody></table>
-            <div class="insig">🤖 <strong>Policy:</strong> 30-day post-discharge telehealth for patients &gt;70 score could reduce readmissions by ~34% (NHSRC Tamil Nadu 2023 benchmarks).</div>
-          </div>
-        </div>
-
+      <div class="demo">
+        <strong>Demo — password: demo123</strong><br>
+        Manager: hospital.manager@nndhospital.org<br>
+        Doctor: cardiology.doctor@nndhospital.org<br>
+        Pharmacy: pharmacy.incharge@nndhospital.org
       </div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
-<div class="wmark">made by Dushyanth & Team From Kalasalingam University</div>
+  <div id="app-shell">
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sb-head">
+          <div class="sb-brand">🏥 NND</div>
+          <div class="sb-loc">NND Hospital</div>
+          <div class="sb-user">
+            <div class="sb-uname" id="sbname">—</div>
+            <div class="sb-urole" id="sbrole">—</div>
+          </div>
+        </div>
+        <nav class="sb-nav" id="sbnav"></nav>
+        <div class="sb-foot"><button class="lout" onclick="doLogout()">🚪 Sign Out</button></div>
+      </aside>
+      <div class="main">
+        <div class="topbar">
+          <div>
+            <div class="tb-title" id="tbtitle">Dashboard</div>
+            <div class="tb-sub">NND Hospital — Salem, Tamil Nadu</div>
+          </div>
+          <div class="tb-r">
+            <span class="llbl"><span class="ldot"></span>LIVE</span>
+            <div class="ttime">
+              <div id="tval">—</div><b>Salem, TN</b>
+            </div>
+          </div>
+        </div>
+        <div class="body">
 
-<script>
-const USERS=[
-  {name:"Dr. Arjun Krishnamurthy",role:"doctor",dept:"Cardiology",email:"cardiology.doctor@nndhospital.org",pw:"demo123"},
-  {name:"Priya Sundaram",role:"receptionist",dept:"Cardiology",email:"cardiology.reception@nndhospital.org",pw:"demo123"},
-  {name:"Murugan Pillai",role:"pharmacy",dept:"Pharmacy",email:"pharmacy.incharge@nndhospital.org",pw:"demo123"},
-  {name:"Dr. Kavitha Rajan",role:"manager",dept:"Administration",email:"hospital.manager@nndhospital.org",pw:"demo123"}
-];
-const DMAP={manager:["Administration","Cardiology","ICU","Emergency","Oncology","Neurology","Orthopaedics","Paediatrics","Nephrology","Pharmacy"],doctor:["Cardiology","Neurology","Orthopaedics","Oncology","Paediatrics","Nephrology","ICU","Emergency"],receptionist:["Cardiology","Orthopaedics","Paediatrics","Emergency","Neurology"],pharmacy:["Pharmacy"]};
-const NAVCFG={manager:[{k:"overview",i:"📊",l:"Dashboard Overview"},{k:"telemetry",i:"💓",l:"Live Telemetry"},{k:"departments",i:"🏛",l:"Departments"},{k:"equipment",i:"🔧",l:"Equipment & Beds"},{k:"pharmacy",i:"💊",l:"Pharmacy"},{k:"staffing",i:"👥",l:"Staffing & HR"},{k:"risk",i:"⚠️",l:"Readmission Risk"}],doctor:[{k:"telemetry",i:"💓",l:"Live Telemetry"},{k:"risk",i:"⚠️",l:"Readmission Risk"},{k:"departments",i:"🏛",l:"Departments"}],receptionist:[{k:"overview",i:"📊",l:"Overview"},{k:"departments",i:"🏛",l:"Departments"}],pharmacy:[{k:"pharmacy",i:"💊",l:"Pharmacy"}]};
-const TITLES={overview:"Hospital Manager Dashboard",telemetry:"Live Patient Telemetry",departments:"Department Utilization",equipment:"Equipment & Bed Management",pharmacy:"Pharmacy & Inventory",staffing:"Staffing & HR Analytics",risk:"Readmission Risk Analysis"};
-const FOOTFALL=[{dept:"Emergency",p:142,cap:60,w:18},{dept:"Cardiology",p:87,cap:80,w:32},{dept:"Orthopaedics",p:74,cap:70,w:28},{dept:"Paediatrics",p:68,cap:65,w:22},{dept:"Neurology",p:55,cap:60,w:15},{dept:"Oncology",p:48,cap:50,w:45},{dept:"Nephrology",p:41,cap:45,w:20},{dept:"Gynaecology",p:39,cap:40,w:19}];
-const STAFF=[{d:"ICU",doc:8,nur:24,r:3.0,req:4.0,g:-1},{d:"Emergency",doc:12,nur:18,r:1.5,req:2.5,g:-12},{d:"Cardiology",doc:10,nur:16,r:1.6,req:2.0,g:-6},{d:"Paediatrics",doc:7,nur:14,r:2.0,req:2.5,g:-5},{d:"Oncology",doc:6,nur:12,r:2.0,req:2.0,g:0},{d:"Orthopaedics",doc:8,nur:10,r:1.25,req:1.5,g:-3}];
-const EQUIP=[{n:"MRI Scanner – 3T",d:"Radiology",s:"in_use",u:6.5,m:12,w:73,mt:"2025-08-10",a:false},{n:"CT Scanner",d:"Radiology",s:"available",u:4.2,m:12,w:41,mt:"2025-09-15",a:false},{n:"Ventilator – ICU-01",d:"ICU",s:"in_use",u:22,m:24,w:91,mt:"2025-07-22",a:true},{n:"Ventilator – ICU-02",d:"ICU",s:"in_use",u:19,m:24,w:79,mt:"2025-08-02",a:false},{n:"Dialysis Machine – 01",d:"Nephrology",s:"in_use",u:8,m:10,w:85,mt:"2025-07-28",a:true},{n:"Dialysis Machine – 02",d:"Nephrology",s:"maintenance",u:0,m:10,w:95,mt:"2025-07-20",a:true},{n:"ECG Monitor – Cath Lab",d:"Cardiology",s:"in_use",u:5,m:12,w:55,mt:"2025-10-01",a:false},{n:"Laparoscopy Tower",d:"Surgery",s:"available",u:3,m:8,w:37,mt:"2025-11-15",a:false}];
-const PHARMA=[{drug:"Amlodipine 5mg",cat:"Cardiac",stk:420,b:85,days:4.9,crit:true},{drug:"Metformin 500mg",cat:"Diabetic",stk:1200,b:110,days:10.9,crit:false},{drug:"Ceftriaxone 1g Inj",cat:"Antibiotic",stk:180,b:42,days:4.3,crit:true},{drug:"Ondansetron 4mg",cat:"Antiemetic",stk:630,b:78,days:8.1,crit:false},{drug:"Heparin 5000 IU",cat:"Anticoag",stk:95,b:22,days:4.3,crit:true},{drug:"Atorvastatin 20mg",cat:"Lipid",stk:880,b:65,days:13.5,crit:false},{drug:"Paracetamol 500mg",cat:"Analgesic",stk:3200,b:290,days:11.0,crit:false},{drug:"Dengvaxia Vaccine",cat:"Vaccine",stk:44,b:12,days:3.7,crit:true}];
-const PATIENTS=[{id:"P-1042",name:"Rajendran K.",ward:"ICU-2",age:67,hr:98,spo2:94,temp:38.2,bp:"148/92",risk:"high"},{id:"P-0987",name:"Meena Devi S.",ward:"Cardiac",age:54,hr:72,spo2:98,temp:37.1,bp:"122/80",risk:"medium"},{id:"P-1103",name:"Anbu Selvan",ward:"ICU-1",age:72,hr:112,spo2:91,temp:39.1,bp:"162/100",risk:"high"},{id:"P-0865",name:"Lakshmi R.",ward:"Nephro",age:45,hr:80,spo2:97,temp:37.4,bp:"130/84",risk:"medium"},{id:"P-1055",name:"Muthu Kumar P.",ward:"Ortho",age:38,hr:68,spo2:99,temp:36.9,bp:"118/76",risk:"low"}];
-const READM=[{name:"Rajendran K.",dept:"Cardiology",score:82,reason:"CHF + DM, non-compliant meds"},{name:"Parvathi Nair",dept:"Nephrology",score:76,reason:"Stage-3 CKD, missed dialysis"},{name:"Siva Shankar",dept:"Pulmonology",score:71,reason:"COPD exacerbation ×2 this year"},{name:"Annamalai D.",dept:"Oncology",score:68,reason:"Post-chemo immunosuppression"},{name:"Vasantha B.",dept:"Neurology",score:61,reason:"Recurrent TIA episodes"}];
-const DIST=[{d:"Salem",p:298},{d:"Namakkal",p:87},{d:"Erode",p:76},{d:"Dharmapuri",p:54},{d:"Krishnagiri",p:38}];
+          <!-- OVERVIEW -->
+          <div class="page" id="page-overview">
+            <div class="ptitle">Operations Overview <span class="aitag">AI</span></div>
+            <div class="psub">Real-time hospital metrics · Auto-refreshes every 5 s</div>
+            <div class="abar">
+              <div class="at">🚨 Critical Alerts Active (3)</div>
+              <div class="ab">ICU Ventilator-01 — wear 91% (overdue) &nbsp;|&nbsp; Dialysis-02 — 95% wear &nbsp;|&nbsp;
+                SpO₂ alert: P-1103 (ICU-1)</div>
+            </div>
+            <div class="kgrid" id="kgrid"></div>
+            <div class="card">
+              <h3>🛏 Bed Capacity Snapshot</h3>
+              <div class="bstats">
+                <div>
+                  <div class="bv" id="bedocc" style="color:var(--danger)">489</div>
+                  <div class="bl">Occupied</div>
+                </div>
+                <div>
+                  <div class="bv" style="color:var(--warn)">28</div>
+                  <div class="bl">Sanitizing</div>
+                </div>
+                <div>
+                  <div class="bv" style="color:var(--ok)">133</div>
+                  <div class="bl">Available</div>
+                </div>
+              </div>
+              <div class="bedbar">
+                <div id="bbocc" style="background:var(--danger);width:75.2%"></div>
+                <div style="background:var(--warn);width:4.3%"></div>
+                <div style="background:var(--ok);flex:1"></div>
+              </div>
+              <div style="text-align:center;font-size:11px;color:var(--muted);margin-top:5px">Total Capacity: 650 beds
+              </div>
+            </div>
+            <div class="g2">
+              <div class="card">
+                <h3>📈 Weekly Admissions vs Discharges</h3>
+                <div class="csub">Last 7 days</div>
+                <div class="cw"><canvas id="cadm"></canvas></div>
+              </div>
+              <div class="card">
+                <h3>🦠 Disease Distribution</h3>
+                <div class="csub">Active in-patient diagnoses</div>
+                <div class="cw"><canvas id="cdis"></canvas></div>
+              </div>
+            </div>
+            <div class="g2">
+              <div class="card">
+                <h3>👥 Age Distribution</h3>
+                <div class="cw"><canvas id="cage"></canvas></div>
+              </div>
+              <div class="card">
+                <h3>📍 Patient Origin — Districts</h3>
+                <table style="margin-top:8px">
+                  <thead>
+                    <tr>
+                      <th>District</th>
+                      <th>Patients</th>
+                      <th>Share</th>
+                    </tr>
+                  </thead>
+                  <tbody id="distb"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-let lpts=PATIENTS.map(x=>({...x}));
-let kOcc=489,kER=18,kAdm=47,poList=[];
-let chartsReady=false;
-let btDevice=null;
-let btServer=null;
-let btCharacteristic=null;
-let btConnected=false;
-let btDeviceName="";
+          <!-- TELEMETRY -->
+          <div class="page" id="page-telemetry">
+            <div class="ptitle">Live Patient Telemetry</div>
+            <div class="psub">IoT Wearable & Ward Sensor Integration — EWS Active · BLE/MQTT/Web Bluetooth</div>
 
-function showToast(msg,type="info"){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.style.background=type==="error"?"#991b1b":type==="success"?"#166534":"#1f2937";
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),4000);
-}
+            <!-- Bluetooth Control Panel -->
+            <div class="bt-unsupported" id="btUnsupported">
+              ⚠️ <strong>Web Bluetooth not available in this browser.</strong> Please use <strong>Google Chrome</strong>
+              or <strong>Microsoft Edge</strong> on desktop, and make sure the page is served over
+              <strong>HTTPS</strong> or <strong>localhost</strong>. You can still use <strong>Simulate BLE</strong> for
+              a demo.
+            </div>
+            <div class="bt-ctrl">
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:4px">🔗 Smartwatch / BLE
+                  Integration</div>
+                <div style="font-size:11px;color:var(--muted)">Connect any BLE smartwatch or HR monitor · Live HR feeds
+                  into Patient Rajendran K.</div>
+              </div>
+              <button class="bt-btn" id="btBtn" onclick="connectWatch()">
+                <span>📡</span> Connect Smartwatch
+              </button>
+              <button class="bt-btn sim" id="simBtn" onclick="simulateBLE()">
+                <span>🎮</span> Simulate BLE
+              </button>
+              <div class="bt-status" id="btStatus">
+                <span>●</span> Disconnected
+              </div>
+            </div>
 
-function updateBTStatus(status,text){
-  const s=document.getElementById('btStatus');
-  s.className='bt-status '+status;
-  s.innerHTML='<span>●</span> '+text;
-}
+            <div class="abar" id="ewsbar" style="display:none">
+              <div class="at">🚨 Early Warning System Alert</div>
+              <div class="ab" id="ewsbody"></div>
+            </div>
+            <div id="tcards"></div>
+            <div class="card" style="background:var(--pale);box-shadow:none">
+              <strong style="color:var(--primary)">🤖 EWS Thresholds</strong>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;font-size:12px">
+                <div>❤️ HR: &lt;50 or &gt;110 bpm</div>
+                <div>🫁 SpO₂: &lt;93%</div>
+                <div>🌡 Temp: &gt;38.5 °C</div>
+              </div>
+            </div>
+            <div class="card" style="margin-top:12px">
+              <h3>ℹ️ Bluetooth Requirements</h3>
+              <div style="font-size:11px;color:var(--muted);line-height:1.9;margin-top:6px">
+                ✅ <strong>Browser:</strong> Google Chrome or Microsoft Edge (desktop only)<br>
+                ✅ <strong>Protocol:</strong> HTTPS or http://localhost<br>
+                ✅ <strong>Device:</strong> Any BLE smartwatch — Noise, boAt, Mi Band, Polar, Apple Watch, Fitbit, Garmin
+                etc.<br>
+                ✅ <strong>OS Bluetooth:</strong> Must be enabled in Windows Settings → Bluetooth<br>
+                ℹ️ Click "Connect Smartwatch" → browser shows a device picker → select your watch → pair<br>
+                ℹ️ If your watch isn't listed, make sure it is in pairing/broadcasting mode<br>
+                ℹ️ Real-time HR overrides simulation for Patient P-1042 (Rajendran K.)
+              </div>
+            </div>
+          </div>
 
-function isWebBTAvailable(){
-  return !!(navigator.bluetooth && navigator.bluetooth.requestDevice);
-}
+          <!-- DEPARTMENTS -->
+          <div class="page" id="page-departments">
+            <div class="ptitle">Department Analytics <span class="aitag">AI</span></div>
+            <div class="psub">Footfall heatmap, wait times & workforce gap analysis</div>
+            <div class="card">
+              <h3>🗺 Department Footfall Heatmap</h3>
+              <div class="csub">Red = overcrowded · Yellow = near capacity · Green = OK</div>
+              <div class="hmap" id="hmap"></div>
+            </div>
+            <div class="g2">
+              <div class="card">
+                <h3>📊 Patient Footfall</h3>
+                <div class="cw"><canvas id="cfoot"></canvas></div>
+              </div>
+              <div class="card">
+                <h3>⏱ Wait Times (min)</h3>
+                <div class="cw"><canvas id="cwait"></canvas></div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>👥 Staff-to-Patient Ratio <span class="aitag">AI</span></h3>
+              <table style="margin-top:8px">
+                <thead>
+                  <tr>
+                    <th>Dept</th>
+                    <th>Doctors</th>
+                    <th>Nurses</th>
+                    <th>Current</th>
+                    <th>Required</th>
+                    <th>Gap</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="stb"></tbody>
+              </table>
+              <div class="insig">⚠ <strong>Policy:</strong> Emergency dept critically understaffed (−12 nurses). ICU
+                ratio below WHO guidelines. Recommend immediate contract nursing engagement.</div>
+            </div>
+          </div>
 
-async function connectWatch(){
-  if(!isWebBTAvailable()){
-    showToast("Web Bluetooth API not available. Use Chrome/Edge on HTTPS or localhost.","error");
-    console.warn("Web Bluetooth not supported in this browser/environment");
-    return;
-  }
-  
-  try{
-    updateBTStatus('scanning','Scanning...');
-    document.getElementById('btBtn').disabled=true;
-    
-    btDevice=await navigator.bluetooth.requestDevice({
-      filters:[{services:['heart_rate']}],
-      optionalServices:['device_information']
-    });
-    
-    btDeviceName=btDevice.name||"Unknown Device";
-    updateBTStatus('scanning','Connecting...');
-    
-    btDevice.addEventListener('gattserverdisconnected',onBTDisconnect);
-    
-    btServer=await btDevice.gatt.connect();
-    const service=await btServer.getPrimaryService('heart_rate');
-    btCharacteristic=await service.getCharacteristic('heart_rate_measurement');
-    
-    await btCharacteristic.startNotifications();
-    btCharacteristic.addEventListener('characteristicvaluechanged',handleHRValue);
-    
-    btConnected=true;
-    updateBTStatus('connected','Connected: '+btDeviceName);
-    showToast("Connected to "+btDeviceName,"success");
-    document.getElementById('btBtn').innerHTML='<span>✓</span> Connected';
-    
-  }catch(err){
-    console.error("Bluetooth connection error:",err);
-    updateBTStatus('error','Connection Failed');
-    showToast("Connection failed: "+err.message,"error");
-    document.getElementById('btBtn').disabled=false;
-    document.getElementById('btBtn').innerHTML='<span>📡</span> Connect Smartwatch';
-  }
-}
+          <!-- EQUIPMENT -->
+          <div class="page" id="page-equipment">
+            <div class="ptitle">Equipment & Bed Management <span class="aitag">AI</span></div>
+            <div class="psub">Live infrastructure tracking with predictive maintenance</div>
+            <div class="kgrid">
+              <div class="kpi">
+                <div class="ki">🛏</div>
+                <div class="kl">Total Beds</div>
+                <div class="kv">650</div>
+              </div>
+              <div class="kpi dan">
+                <div class="ki">🔴</div>
+                <div class="kl">Occupied</div>
+                <div class="kv" style="color:var(--danger)">489</div>
+              </div>
+              <div class="kpi">
+                <div class="ki">🟡</div>
+                <div class="kl">Sanitizing</div>
+                <div class="kv" style="color:var(--warn)">28</div>
+              </div>
+              <div class="kpi gd">
+                <div class="ki">🟢</div>
+                <div class="kl">Available</div>
+                <div class="kv" style="color:var(--ok)">133</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>🔧 Critical Equipment Status</h3>
+              <div style="overflow-x:auto;margin-top:8px">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Equipment</th>
+                      <th>Dept</th>
+                      <th>Status</th>
+                      <th>Usage</th>
+                      <th>Wear</th>
+                      <th>Next Maint</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="etb"></tbody>
+                </table>
+              </div>
+              <div class="insig">🤖 <strong>AI Alert:</strong> Dialysis-02 at 95% wear — breakdown probability in 48 h
+                is 78%. Ventilator ICU-01 overdue. Recommend immediate engineer dispatch.</div>
+            </div>
+          </div>
 
-function onBTDisconnect(event){
-  console.log("Bluetooth device disconnected");
-  btConnected=false;
-  btDevice=null;
-  btServer=null;
-  btCharacteristic=null;
-  updateBTStatus('','Disconnected');
-  document.getElementById('btBtn').disabled=false;
-  document.getElementById('btBtn').innerHTML='<span>📡</span> Connect Smartwatch';
-  showToast("Bluetooth device disconnected","error");
-}
+          <!-- PHARMACY -->
+          <div class="page" id="page-pharmacy">
+            <div class="ptitle">Pharmacy & Inventory <span class="aitag">AI</span></div>
+            <div class="psub">Stock levels, burn rates & automated Purchase Order generation</div>
+            <div class="abar">
+              <div class="at">🚨 4 Critical Drugs Below 7-Day Threshold</div>
+              <div class="ab">Amlodipine 5mg (4.9d) · Ceftriaxone 1g (4.3d) · Heparin 5000IU (4.3d) · Dengvaxia Vaccine
+                (3.7d)</div>
+            </div>
+            <div class="kgrid">
+              <div class="kpi">
+                <div class="ki">💊</div>
+                <div class="kl">Drug SKUs</div>
+                <div class="kv">8</div>
+              </div>
+              <div class="kpi dan">
+                <div class="ki">🚨</div>
+                <div class="kl">Critical Stock</div>
+                <div class="kv" style="color:var(--danger)">4</div>
+                <div class="kh">Below 7-day supply</div>
+              </div>
+              <div class="kpi">
+                <div class="ki">📦</div>
+                <div class="kl">Daily Dispense</div>
+                <div class="kv">702</div>
+                <div class="kh">Units/day</div>
+              </div>
+              <div class="kpi gd">
+                <div class="ki">🛒</div>
+                <div class="kl">Auto-POs Sent</div>
+                <div class="kv" id="poc" style="color:var(--ok)">0</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>📦 Medicine Stock & Burn Rate</h3>
+              <div style="overflow-x:auto;margin-top:8px">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Medicine</th>
+                      <th>Category</th>
+                      <th>Stock</th>
+                      <th>Daily Burn</th>
+                      <th>Days Left</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ptb"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <h3>📈 Daily Drug Burn Rate</h3>
+              <div class="cw"><canvas id="cphar"></canvas></div>
+            </div>
+            <div id="posuc"
+              style="display:none;margin-top:12px;padding:12px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;color:#166534">
+            </div>
+          </div>
 
-function handleHRValue(event){
-  const value=event.target.value;
-  const flags=value.getUint8(0);
-  const hr16bit=flags & 0x01;
-  let hr;
-  if(hr16bit){
-    hr=value.getUint16(1,true);
-  }else{
-    hr=value.getUint8(1);
-  }
-  
-  // Update first patient (Rajendran K.) with real HR data
-  if(lpts.length>0){
-    lpts[0].hr=hr;
-    lpts[0].btSource=true; // Flag to indicate Bluetooth source
-    if(document.getElementById('page-telemetry').classList.contains('active')){
-      renderTele();
+          <!-- STAFFING -->
+          <div class="page" id="page-staffing">
+            <div class="ptitle">Staffing & HR Analytics <span class="aitag">AI Predictor</span></div>
+            <div class="psub">Cross-references seasonal disease data & historical admissions</div>
+            <div class="card">
+              <h3>📅 AI Admission Forecast — Historical + 6-Month Projection</h3>
+              <div class="cw" style="height:240px"><canvas id="cfor"></canvas></div>
+              <div class="insig">🤖 <strong>AI Insight:</strong> Nov–Dec spike (dengue + respiratory season in Salem)
+                requires 18 additional nurses & 6 doctors. Begin recruitment by September.</div>
+            </div>
+            <div class="card">
+              <h3>👥 Workforce Gap Analysis</h3>
+              <table style="margin-top:8px">
+                <thead>
+                  <tr>
+                    <th>Dept</th>
+                    <th>Doctors</th>
+                    <th>Nurses</th>
+                    <th>Current</th>
+                    <th>Required</th>
+                    <th>Gap</th>
+                    <th>Priority</th>
+                  </tr>
+                </thead>
+                <tbody id="stb2"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- RISK -->
+          <div class="page" id="page-risk">
+            <div class="ptitle">Readmission Risk Predictor <span class="aitag">AI + EHR</span></div>
+            <div class="psub">HL7/FHIR-compliant EHR history analysis · Post-discharge protocol planning</div>
+            <div class="abar">
+              <div class="at">⚠ 5 Patients with High Readmission Risk Identified</div>
+              <div class="ab">Recommend discharge counselling, telehealth follow-up & medication compliance tracking.
+              </div>
+            </div>
+            <div class="card">
+              <h3>🔁 High-Risk Readmission List</h3>
+              <div class="csub">Score &gt; 60 = High probability within 30 days of discharge</div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Patient</th>
+                    <th>Dept</th>
+                    <th>Score</th>
+                    <th>Level</th>
+                    <th>Clinical Reason</th>
+                    <th>Recommended Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ritb"></tbody>
+              </table>
+              <div class="insig">🤖 <strong>Policy:</strong> 30-day post-discharge telehealth for patients &gt;70 score
+                could reduce readmissions by ~34% (NHSRC Tamil Nadu 2023 benchmarks).</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="wmark">made by Dushyanth & Team From Kalasalingam University</div>
+
+  <script>
+    const USERS = [
+      { name: "Dr. Arjun Krishnamurthy", role: "doctor", dept: "Cardiology", email: "cardiology.doctor@nndhospital.org", pw: "demo123" },
+      { name: "Priya Sundaram", role: "receptionist", dept: "Cardiology", email: "cardiology.reception@nndhospital.org", pw: "demo123" },
+      { name: "Murugan Pillai", role: "pharmacy", dept: "Pharmacy", email: "pharmacy.incharge@nndhospital.org", pw: "demo123" },
+      { name: "Dr. Kavitha Rajan", role: "manager", dept: "Administration", email: "hospital.manager@nndhospital.org", pw: "demo123" }
+    ];
+    const DMAP = { manager: ["Administration", "Cardiology", "ICU", "Emergency", "Oncology", "Neurology", "Orthopaedics", "Paediatrics", "Nephrology", "Pharmacy"], doctor: ["Cardiology", "Neurology", "Orthopaedics", "Oncology", "Paediatrics", "Nephrology", "ICU", "Emergency"], receptionist: ["Cardiology", "Orthopaedics", "Paediatrics", "Emergency", "Neurology"], pharmacy: ["Pharmacy"] };
+    const NAVCFG = { manager: [{ k: "overview", i: "📊", l: "Dashboard Overview" }, { k: "telemetry", i: "💓", l: "Live Telemetry" }, { k: "departments", i: "🏛", l: "Departments" }, { k: "equipment", i: "🔧", l: "Equipment & Beds" }, { k: "pharmacy", i: "💊", l: "Pharmacy" }, { k: "staffing", i: "👥", l: "Staffing & HR" }, { k: "risk", i: "⚠️", l: "Readmission Risk" }], doctor: [{ k: "telemetry", i: "💓", l: "Live Telemetry" }, { k: "risk", i: "⚠️", l: "Readmission Risk" }, { k: "departments", i: "🏛", l: "Departments" }], receptionist: [{ k: "overview", i: "📊", l: "Overview" }, { k: "departments", i: "🏛", l: "Departments" }], pharmacy: [{ k: "pharmacy", i: "💊", l: "Pharmacy" }] };
+    const TITLES = { overview: "Hospital Manager Dashboard", telemetry: "Live Patient Telemetry", departments: "Department Utilization", equipment: "Equipment & Bed Management", pharmacy: "Pharmacy & Inventory", staffing: "Staffing & HR Analytics", risk: "Readmission Risk Analysis" };
+    const FOOTFALL = [{ dept: "Emergency", p: 142, cap: 60, w: 18 }, { dept: "Cardiology", p: 87, cap: 80, w: 32 }, { dept: "Orthopaedics", p: 74, cap: 70, w: 28 }, { dept: "Paediatrics", p: 68, cap: 65, w: 22 }, { dept: "Neurology", p: 55, cap: 60, w: 15 }, { dept: "Oncology", p: 48, cap: 50, w: 45 }, { dept: "Nephrology", p: 41, cap: 45, w: 20 }, { dept: "Gynaecology", p: 39, cap: 40, w: 19 }];
+    const STAFF = [{ d: "ICU", doc: 8, nur: 24, r: 3.0, req: 4.0, g: -1 }, { d: "Emergency", doc: 12, nur: 18, r: 1.5, req: 2.5, g: -12 }, { d: "Cardiology", doc: 10, nur: 16, r: 1.6, req: 2.0, g: -6 }, { d: "Paediatrics", doc: 7, nur: 14, r: 2.0, req: 2.5, g: -5 }, { d: "Oncology", doc: 6, nur: 12, r: 2.0, req: 2.0, g: 0 }, { d: "Orthopaedics", doc: 8, nur: 10, r: 1.25, req: 1.5, g: -3 }];
+    const EQUIP = [{ n: "MRI Scanner – 3T", d: "Radiology", s: "in_use", u: 6.5, m: 12, w: 73, mt: "2025-08-10", a: false }, { n: "CT Scanner", d: "Radiology", s: "available", u: 4.2, m: 12, w: 41, mt: "2025-09-15", a: false }, { n: "Ventilator – ICU-01", d: "ICU", s: "in_use", u: 22, m: 24, w: 91, mt: "2025-07-22", a: true }, { n: "Ventilator – ICU-02", d: "ICU", s: "in_use", u: 19, m: 24, w: 79, mt: "2025-08-02", a: false }, { n: "Dialysis Machine – 01", d: "Nephrology", s: "in_use", u: 8, m: 10, w: 85, mt: "2025-07-28", a: true }, { n: "Dialysis Machine – 02", d: "Nephrology", s: "maintenance", u: 0, m: 10, w: 95, mt: "2025-07-20", a: true }, { n: "ECG Monitor – Cath Lab", d: "Cardiology", s: "in_use", u: 5, m: 12, w: 55, mt: "2025-10-01", a: false }, { n: "Laparoscopy Tower", d: "Surgery", s: "available", u: 3, m: 8, w: 37, mt: "2025-11-15", a: false }];
+    const PHARMA = [{ drug: "Amlodipine 5mg", cat: "Cardiac", stk: 420, b: 85, days: 4.9, crit: true }, { drug: "Metformin 500mg", cat: "Diabetic", stk: 1200, b: 110, days: 10.9, crit: false }, { drug: "Ceftriaxone 1g Inj", cat: "Antibiotic", stk: 180, b: 42, days: 4.3, crit: true }, { drug: "Ondansetron 4mg", cat: "Antiemetic", stk: 630, b: 78, days: 8.1, crit: false }, { drug: "Heparin 5000 IU", cat: "Anticoag", stk: 95, b: 22, days: 4.3, crit: true }, { drug: "Atorvastatin 20mg", cat: "Lipid", stk: 880, b: 65, days: 13.5, crit: false }, { drug: "Paracetamol 500mg", cat: "Analgesic", stk: 3200, b: 290, days: 11.0, crit: false }, { drug: "Dengvaxia Vaccine", cat: "Vaccine", stk: 44, b: 12, days: 3.7, crit: true }];
+    const PATIENTS = [{ id: "P-1042", name: "Rajendran K.", ward: "ICU-2", age: 67, hr: 98, spo2: 94, temp: 38.2, bp: "148/92", risk: "high" }, { id: "P-0987", name: "Meena Devi S.", ward: "Cardiac", age: 54, hr: 72, spo2: 98, temp: 37.1, bp: "122/80", risk: "medium" }, { id: "P-1103", name: "Anbu Selvan", ward: "ICU-1", age: 72, hr: 112, spo2: 91, temp: 39.1, bp: "162/100", risk: "high" }, { id: "P-0865", name: "Lakshmi R.", ward: "Nephro", age: 45, hr: 80, spo2: 97, temp: 37.4, bp: "130/84", risk: "medium" }, { id: "P-1055", name: "Muthu Kumar P.", ward: "Ortho", age: 38, hr: 68, spo2: 99, temp: 36.9, bp: "118/76", risk: "low" }];
+    const READM = [{ name: "Rajendran K.", dept: "Cardiology", score: 82, reason: "CHF + DM, non-compliant meds" }, { name: "Parvathi Nair", dept: "Nephrology", score: 76, reason: "Stage-3 CKD, missed dialysis" }, { name: "Siva Shankar", dept: "Pulmonology", score: 71, reason: "COPD exacerbation ×2 this year" }, { name: "Annamalai D.", dept: "Oncology", score: 68, reason: "Post-chemo immunosuppression" }, { name: "Vasantha B.", dept: "Neurology", score: 61, reason: "Recurrent TIA episodes" }];
+    const DIST = [{ d: "Salem", p: 298 }, { d: "Namakkal", p: 87 }, { d: "Erode", p: 76 }, { d: "Dharmapuri", p: 54 }, { d: "Krishnagiri", p: 38 }];
+
+    let lpts = PATIENTS.map(x => ({ ...x }));
+    let kOcc = 489, kER = 18, kAdm = 47, poList = [];
+    let chartsReady = false;
+    let btDevice = null;
+    let btServer = null;
+    let btCharacteristic = null;
+    let btConnected = false;
+    let btDeviceName = "";
+
+    function showToast(msg, type = "info") {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = type === "error" ? "#991b1b" : type === "success" ? "#166534" : "#1f2937";
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
     }
-  }
-  
-  console.log("Received HR from Bluetooth:",hr);
-}
 
-function onRC(){
-  const r=document.getElementById('irole').value;
-  const s=document.getElementById('idept');
-  s.innerHTML='<option value="">— Select dept —</option>';
-  (DMAP[r]||[]).forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;s.appendChild(o);});
-}
-
-function doLogin(){
-  const role=document.getElementById('irole').value,dept=document.getElementById('idept').value;
-  const email=document.getElementById('iemail').value.trim().toLowerCase(),pw=document.getElementById('ipw').value;
-  const err=document.getElementById('lerr');
-  err.style.display='none';
-  if(!role||!dept){err.textContent='⚠ Please select role and department.';err.style.display='block';return;}
-  const u=USERS.find(x=>x.email===email&&x.pw===pw&&x.role===role);
-  if(!u){err.textContent='⚠ Invalid credentials or role mismatch. Use demo credentials below.';err.style.display='block';return;}
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-shell').style.display='block';
-  document.getElementById('sbname').textContent=u.name;
-  document.getElementById('sbrole').textContent=dept+' · '+{manager:'Manager',doctor:'Doctor',receptionist:'Receptionist',pharmacy:'Pharmacy'}[role];
-  buildNav(role);
-  const def={manager:'overview',doctor:'telemetry',receptionist:'overview',pharmacy:'pharmacy'};
-  showPage(def[role]||'overview');
-  setInterval(liveUpdate,5000);
-}
-
-function doLogout(){
-  if(btConnected && btServer){
-    btServer.disconnect();
-  }
-  document.getElementById('app-shell').style.display='none';
-  document.getElementById('login-screen').style.display='flex';
-  ['irole','idept','iemail','ipw'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('lerr').style.display='none';
-  btConnected=false;
-  btDevice=null;
-}
-
-function buildNav(role){
-  const nav=document.getElementById('sbnav');nav.innerHTML='';
-  (NAVCFG[role]||NAVCFG.manager).forEach(it=>{
-    const b=document.createElement('button');b.className='nb';b.dataset.k=it.k;
-    b.innerHTML=`<span class="nb-ico">${it.i}</span>${it.l}`;
-    b.onclick=()=>showPage(it.k);nav.appendChild(b);
-  });
-}
-
-function showPage(k){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
-  const pg=document.getElementById('page-'+k);if(pg)pg.classList.add('active');
-  document.querySelectorAll('.nb[data-k="'+k+'"]').forEach(b=>b.classList.add('active'));
-  document.getElementById('tbtitle').textContent=TITLES[k]||k;
-  if(!chartsReady){buildAll();chartsReady=true;}
-  if(k==='telemetry')renderTele();
-}
-
-setInterval(()=>{document.getElementById('tval').textContent=new Date().toLocaleString('en-IN',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});},1000);
-document.getElementById('tval').textContent=new Date().toLocaleString('en-IN',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-
-function liveUpdate(){
-  kOcc=Math.max(400,Math.min(640,kOcc+Math.round((Math.random()-.5)*4)));
-  kER=Math.max(5,kER+Math.round((Math.random()-.5)*3));
-  if(Math.random()>.9)kAdm++;
-  renderKPIs();
-  const pct=Math.round(kOcc/650*100);
-  document.getElementById('bedocc').textContent=kOcc;
-  document.getElementById('bbocc').style.width=pct+'%';
-  
-  // Update patients: if Bluetooth connected, skip first patient HR (use real data)
-  lpts=lpts.map((p,idx)=>{
-    if(idx===0 && btConnected){
-      // Keep HR from Bluetooth, simulate other vitals
-      return {...p,spo2:Math.min(100,Math.round(p.spo2+(Math.random()-.5)*2)),temp:+(p.temp+(Math.random()-.5)*.4).toFixed(1)};
-    }else{
-      // Simulate all vitals
-      return {...p,hr:Math.round(p.hr+(Math.random()-.5)*8),spo2:Math.min(100,Math.round(p.spo2+(Math.random()-.5)*2)),temp:+(p.temp+(Math.random()-.5)*.4).toFixed(1)};
+    function updateBTStatus(status, text) {
+      const s = document.getElementById('btStatus');
+      s.className = 'bt-status ' + status;
+      s.innerHTML = '<span>●</span> ' + text;
     }
-  });
-  
-  if(document.getElementById('page-telemetry').classList.contains('active'))renderTele();
-}
 
-function renderKPIs(){
-  const pct=Math.round(kOcc/650*100);
-  const kd=[{i:'🛏',l:'Total Beds',v:650,h:'Sanctioned',c:''},{i:'🔴',l:'Occupied',v:kOcc,h:pct+'% occupancy',c:pct>90?'dan':'',col:'var(--danger)'},{i:'🟡',l:'Sanitizing',v:28,h:'Turnaround',c:'',col:'var(--warn)'},{i:'🟢',l:'Available',v:650-kOcc-28,h:'Ready',c:'gd',col:'var(--ok)'},{i:'🏥',l:'Active Patients',v:kOcc,h:'In-patient census',c:''},{i:'📥',l:'Admissions',v:kAdm,h:'Today',c:''},{i:'📤',l:'Discharges',v:39,h:'Today',c:''},{i:'⏱',l:'Avg LOS',v:'4.2d',h:'Length of stay',c:''},{i:'🧪',l:'ICU Occupancy',v:'87%',h:'28/32 beds',c:'dan'},{i:'⚡',l:'ER Wait',v:kER+'m',h:'Avg wait',c:kER>30?'dan':''},{i:'👨‍⚕️',l:'Staff Present',v:312,h:'On shift',c:''},{i:'🚨',l:'Critical Alerts',v:3,h:'Require action',c:'dan'}];
-  document.getElementById('kgrid').innerHTML=kd.map(k=>`<div class="kpi ${k.c}"><div class="ki">${k.i}</div><div class="kl">${k.l}</div><div class="kv" style="${k.col?'color:'+k.col:''}">${k.v}</div><div class="kh">${k.h}</div></div>`).join('');
-}
-renderKPIs();
+    function isWebBTAvailable() {
+      return !!(navigator.bluetooth && navigator.bluetooth.requestDevice);
+    }
 
-function renderTele(){
-  const alerts=lpts.filter(p=>p.spo2<93||p.hr>110||p.temp>38.5);
-  const eb=document.getElementById('ewsbar');
-  if(alerts.length){eb.style.display='block';document.getElementById('ewsbody').innerHTML=alerts.map(p=>`• ${p.name} (${p.ward}) — SpO₂ ${p.spo2}% / HR ${p.hr} / Temp ${p.temp}°C`).join('<br>');}
-  else eb.style.display='none';
-  document.getElementById('tcards').innerHTML=lpts.map((p,idx)=>{
-    const al=p.spo2<93||p.hr>110||p.temp>38.5;
-    const hok=p.hr>=60&&p.hr<=100,sok=p.spo2>=95,tok=p.temp>=36.1&&p.temp<=37.9;
-    const sparks=Array.from({length:16},()=>Math.round(p.hr+(Math.random()-.5)*10));
-    const mx=Math.max(...sparks),mn=Math.min(...sparks);
-    const sp=sparks.map(v=>`<div class="sb2${al?' al':''}" style="height:${Math.round((v-mn)/(mx-mn+1)*28+6)}px"></div>`).join('');
-    const btBadge=(idx===0 && btConnected)?'<span class="badge bg" style="background:#dbeafe;color:#1e40af">🔗 BLE</span>':'';
-    return `<div class="vtcard ${al?'al':p.risk==='medium'?'med':''}">
+    function getBTErrorMessage(err) {
+      if (err.name === 'NotFoundError') return 'No device selected or device not found. Make sure your smartwatch is on and in range.';
+      if (err.name === 'SecurityError') return 'Bluetooth blocked: page must be served over HTTPS or localhost.';
+      if (err.name === 'NotSupportedError') return 'This browser does not support Web Bluetooth. Use Chrome or Edge on desktop.';
+      if (err.name === 'NetworkError') return 'Could not connect to device. Make sure Bluetooth is ON in Windows Settings and the watch is nearby.';
+      if (err.message && err.message.includes('User cancelled')) return 'Connection cancelled. Please try again and select your device.';
+      return err.message || 'Unknown error. Make sure Bluetooth is enabled and try again.';
+    }
+
+    let simInterval = null;
+
+    function simulateBLE() {
+      if (simInterval) {
+        clearInterval(simInterval);
+        simInterval = null;
+        btConnected = false;
+        updateBTStatus('', 'Disconnected');
+        document.getElementById('simBtn').innerHTML = '<span>🎮</span> Simulate BLE';
+        document.getElementById('btBtn').disabled = false;
+        showToast('BLE simulation stopped', 'info');
+        return;
+      }
+      btConnected = true;
+      btDeviceName = 'Simulated Watch';
+      updateBTStatus('simulated', '🎮 Simulated BLE Active');
+      document.getElementById('simBtn').innerHTML = '<span>⏹</span> Stop Simulation';
+      document.getElementById('btBtn').disabled = true;
+      showToast('BLE simulation started — HR data now live for Rajendran K.', 'success');
+      simInterval = setInterval(() => {
+        const hr = Math.round(72 + (Math.random() - .5) * 30);
+        if (lpts.length > 0) {
+          lpts[0].hr = Math.max(45, Math.min(130, hr));
+          lpts[0].btSource = true;
+          if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
+        }
+      }, 2000);
+    }
+
+    async function connectWatch() {
+      if (!isWebBTAvailable()) {
+        const b = document.getElementById('btUnsupported');
+        if (b) b.style.display = 'block';
+        showToast('Web Bluetooth not available. Use Chrome/Edge on HTTPS or localhost. Try Simulate BLE instead.', 'error');
+        return;
+      }
+      if (simInterval) { clearInterval(simInterval); simInterval = null; document.getElementById('simBtn').innerHTML = '<span>🎮</span> Simulate BLE'; }
+      try {
+        updateBTStatus('scanning', 'Scanning for devices...');
+        document.getElementById('btBtn').disabled = true;
+        document.getElementById('btBtn').innerHTML = '<span>🔍</span> Scanning...';
+        // acceptAllDevices so ANY BLE smartwatch (Noise, boAt, Mi Band, etc.) appears in picker
+        btDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['heart_rate', '0000180d-0000-1000-8000-00805f9b34fb']
+        });
+        btDeviceName = btDevice.name || 'Unknown Device';
+        updateBTStatus('scanning', 'Connecting to ' + btDeviceName + '...');
+        btDevice.addEventListener('gattserverdisconnected', onBTDisconnect);
+        btServer = await btDevice.gatt.connect();
+        // Try standard HR service first, then fall back
+        let service;
+        try {
+          service = await btServer.getPrimaryService('heart_rate');
+          btCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+          await btCharacteristic.startNotifications();
+          btCharacteristic.addEventListener('characteristicvaluechanged', handleHRValue);
+          btConnected = true;
+          updateBTStatus('connected', 'Connected: ' + btDeviceName);
+          showToast('Connected to ' + btDeviceName + ' via HR GATT', 'success');
+          document.getElementById('btBtn').innerHTML = '<span>✓</span> Connected';
+        } catch (svcErr) {
+          // Device connected but doesn't expose HR GATT — start simulation driven by BLE presence
+          btConnected = true;
+          updateBTStatus('connected', 'Connected: ' + btDeviceName + ' (sim HR)');
+          showToast(btDeviceName + ' connected! HR profile not found — using simulated HR data.', 'success');
+          document.getElementById('btBtn').innerHTML = '<span>✓</span> Connected';
+          // Auto-start simulation since device is paired
+          if (!simInterval) {
+            document.getElementById('simBtn').innerHTML = '<span>⏹</span> Stop Simulation';
+            simInterval = setInterval(() => {
+              const hr = Math.round(75 + (Math.random() - .5) * 25);
+              if (lpts.length > 0) {
+                lpts[0].hr = Math.max(45, Math.min(130, hr));
+                lpts[0].btSource = true;
+                if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
+              }
+            }, 2000);
+          }
+        }
+      } catch (err) {
+        console.error('Bluetooth error:', err);
+        const msg = getBTErrorMessage(err);
+        updateBTStatus('error', 'Failed — ' + err.name);
+        showToast('⚠ ' + msg, 'error');
+        document.getElementById('btBtn').disabled = false;
+        document.getElementById('btBtn').innerHTML = '<span>📡</span> Connect Smartwatch';
+      }
+    }
+
+    function onBTDisconnect() {
+      if (simInterval) { clearInterval(simInterval); simInterval = null; }
+      btConnected = false;
+      btDevice = null;
+      btServer = null;
+      btCharacteristic = null;
+      updateBTStatus('error', 'Disconnected');
+      document.getElementById('btBtn').disabled = false;
+      document.getElementById('btBtn').innerHTML = '<span>📡</span> Connect Smartwatch';
+      document.getElementById('simBtn').innerHTML = '<span>🎮</span> Simulate BLE';
+      showToast('Bluetooth device disconnected', 'error');
+    }
+
+    function handleHRValue(event) {
+      const value = event.target.value;
+      const flags = value.getUint8(0);
+      const hr = (flags & 0x01) ? value.getUint16(1, true) : value.getUint8(1);
+      if (lpts.length > 0) {
+        lpts[0].hr = hr;
+        lpts[0].btSource = true;
+        if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
+      }
+      console.log('BLE HR reading:', hr, 'bpm');
+    }
+
+    function onRC() {
+      const r = document.getElementById('irole').value;
+      const s = document.getElementById('idept');
+      s.innerHTML = '<option value="">— Select dept —</option>';
+      (DMAP[r] || []).forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; s.appendChild(o); });
+    }
+
+    function doLogin() {
+      const role = document.getElementById('irole').value, dept = document.getElementById('idept').value;
+      const email = document.getElementById('iemail').value.trim().toLowerCase(), pw = document.getElementById('ipw').value;
+      const err = document.getElementById('lerr');
+      err.style.display = 'none';
+      if (!role || !dept) { err.textContent = '⚠ Please select role and department.'; err.style.display = 'block'; return; }
+      const u = USERS.find(x => x.email === email && x.pw === pw && x.role === role);
+      if (!u) { err.textContent = '⚠ Invalid credentials or role mismatch. Use demo credentials below.'; err.style.display = 'block'; return; }
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-shell').style.display = 'block';
+      document.getElementById('sbname').textContent = u.name;
+      document.getElementById('sbrole').textContent = dept + ' · ' + { manager: 'Manager', doctor: 'Doctor', receptionist: 'Receptionist', pharmacy: 'Pharmacy' }[role];
+      buildNav(role);
+      const def = { manager: 'overview', doctor: 'telemetry', receptionist: 'overview', pharmacy: 'pharmacy' };
+      showPage(def[role] || 'overview');
+      setInterval(liveUpdate, 5000);
+    }
+
+    function doLogout() {
+      if (btConnected && btServer) {
+        btServer.disconnect();
+      }
+      document.getElementById('app-shell').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      ['irole', 'idept', 'iemail', 'ipw'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('lerr').style.display = 'none';
+      btConnected = false;
+      btDevice = null;
+    }
+
+    function buildNav(role) {
+      const nav = document.getElementById('sbnav'); nav.innerHTML = '';
+      (NAVCFG[role] || NAVCFG.manager).forEach(it => {
+        const b = document.createElement('button'); b.className = 'nb'; b.dataset.k = it.k;
+        b.innerHTML = `<span class="nb-ico">${it.i}</span>${it.l}`;
+        b.onclick = () => showPage(it.k); nav.appendChild(b);
+      });
+    }
+
+    function showPage(k) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nb').forEach(b => b.classList.remove('active'));
+      const pg = document.getElementById('page-' + k); if (pg) pg.classList.add('active');
+      document.querySelectorAll('.nb[data-k="' + k + '"]').forEach(b => b.classList.add('active'));
+      document.getElementById('tbtitle').textContent = TITLES[k] || k;
+      if (!chartsReady) { buildAll(); chartsReady = true; }
+      if (k === 'telemetry') renderTele();
+    }
+
+    setInterval(() => { document.getElementById('tval').textContent = new Date().toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }, 1000);
+    document.getElementById('tval').textContent = new Date().toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+    function liveUpdate() {
+      kOcc = Math.max(400, Math.min(640, kOcc + Math.round((Math.random() - .5) * 4)));
+      kER = Math.max(5, kER + Math.round((Math.random() - .5) * 3));
+      if (Math.random() > .9) kAdm++;
+      renderKPIs();
+      const pct = Math.round(kOcc / 650 * 100);
+      document.getElementById('bedocc').textContent = kOcc;
+      document.getElementById('bbocc').style.width = pct + '%';
+
+      // Update patients: if Bluetooth connected, skip first patient HR (use real data)
+      lpts = lpts.map((p, idx) => {
+        if (idx === 0 && btConnected) {
+          // Keep HR from Bluetooth, simulate other vitals
+          return { ...p, spo2: Math.min(100, Math.round(p.spo2 + (Math.random() - .5) * 2)), temp: +(p.temp + (Math.random() - .5) * .4).toFixed(1) };
+        } else {
+          // Simulate all vitals
+          return { ...p, hr: Math.round(p.hr + (Math.random() - .5) * 8), spo2: Math.min(100, Math.round(p.spo2 + (Math.random() - .5) * 2)), temp: +(p.temp + (Math.random() - .5) * .4).toFixed(1) };
+        }
+      });
+
+      if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
+    }
+
+    function renderKPIs() {
+      const pct = Math.round(kOcc / 650 * 100);
+      const kd = [{ i: '🛏', l: 'Total Beds', v: 650, h: 'Sanctioned', c: '' }, { i: '🔴', l: 'Occupied', v: kOcc, h: pct + '% occupancy', c: pct > 90 ? 'dan' : '', col: 'var(--danger)' }, { i: '🟡', l: 'Sanitizing', v: 28, h: 'Turnaround', c: '', col: 'var(--warn)' }, { i: '🟢', l: 'Available', v: 650 - kOcc - 28, h: 'Ready', c: 'gd', col: 'var(--ok)' }, { i: '🏥', l: 'Active Patients', v: kOcc, h: 'In-patient census', c: '' }, { i: '📥', l: 'Admissions', v: kAdm, h: 'Today', c: '' }, { i: '📤', l: 'Discharges', v: 39, h: 'Today', c: '' }, { i: '⏱', l: 'Avg LOS', v: '4.2d', h: 'Length of stay', c: '' }, { i: '🧪', l: 'ICU Occupancy', v: '87%', h: '28/32 beds', c: 'dan' }, { i: '⚡', l: 'ER Wait', v: kER + 'm', h: 'Avg wait', c: kER > 30 ? 'dan' : '' }, { i: '👨‍⚕️', l: 'Staff Present', v: 312, h: 'On shift', c: '' }, { i: '🚨', l: 'Critical Alerts', v: 3, h: 'Require action', c: 'dan' }];
+      document.getElementById('kgrid').innerHTML = kd.map(k => `<div class="kpi ${k.c}"><div class="ki">${k.i}</div><div class="kl">${k.l}</div><div class="kv" style="${k.col ? 'color:' + k.col : ''}">${k.v}</div><div class="kh">${k.h}</div></div>`).join('');
+    }
+    renderKPIs();
+
+    function renderTele() {
+      const alerts = lpts.filter(p => p.spo2 < 93 || p.hr > 110 || p.temp > 38.5);
+      const eb = document.getElementById('ewsbar');
+      if (alerts.length) { eb.style.display = 'block'; document.getElementById('ewsbody').innerHTML = alerts.map(p => `• ${p.name} (${p.ward}) — SpO₂ ${p.spo2}% / HR ${p.hr} / Temp ${p.temp}°C`).join('<br>'); }
+      else eb.style.display = 'none';
+      document.getElementById('tcards').innerHTML = lpts.map((p, idx) => {
+        const al = p.spo2 < 93 || p.hr > 110 || p.temp > 38.5;
+        const hok = p.hr >= 60 && p.hr <= 100, sok = p.spo2 >= 95, tok = p.temp >= 36.1 && p.temp <= 37.9;
+        const sparks = Array.from({ length: 16 }, () => Math.round(p.hr + (Math.random() - .5) * 10));
+        const mx = Math.max(...sparks), mn = Math.min(...sparks);
+        const sp = sparks.map(v => `<div class="sb2${al ? ' al' : ''}" style="height:${Math.round((v - mn) / (mx - mn + 1) * 28 + 6)}px"></div>`).join('');
+        const btBadge = (idx === 0 && btConnected) ? '<span class="badge bg" style="background:#dbeafe;color:#1e40af">🔗 BLE</span>' : '';
+        return `<div class="vtcard ${al ? 'al' : p.risk === 'medium' ? 'med' : ''}">
       <div class="vrow">
         <div>
-          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><strong style="font-size:13px">${p.name}</strong><span style="font-size:10px;color:var(--muted)">${p.id}</span><span class="badge ${p.risk==='high'?'br':p.risk==='medium'?'by':'bg'}">${p.risk.toUpperCase()}</span>${al?'<span class="badge br">⚠ EWS ALERT</span>':''}${btBadge}</div>
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap"><strong style="font-size:13px">${p.name}</strong><span style="font-size:10px;color:var(--muted)">${p.id}</span><span class="badge ${p.risk === 'high' ? 'br' : p.risk === 'medium' ? 'by' : 'bg'}">${p.risk.toUpperCase()}</span>${al ? '<span class="badge br">⚠ EWS ALERT</span>' : ''}${btBadge}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px">Ward: ${p.ward} · Age: ${p.age} · BP: ${p.bp}</div>
         </div>
         <div class="vbs">
-          <div class="vb${!hok?' bad':''}"><div class="vbv${!hok?' bad':''}">${p.hr}</div><div class="vbl">Heart Rate</div><div class="vbl">bpm</div></div>
-          <div class="vb${!sok?' bad':''}"><div class="vbv${!sok?' bad':''}">${p.spo2}</div><div class="vbl">SpO₂</div><div class="vbl">%</div></div>
-          <div class="vb${!tok?' bad':''}"><div class="vbv${!tok?' bad':''}">${p.temp}</div><div class="vbl">Temp</div><div class="vbl">°C</div></div>
+          <div class="vb${!hok ? ' bad' : ''}"><div class="vbv${!hok ? ' bad' : ''}">${p.hr}</div><div class="vbl">Heart Rate</div><div class="vbl">bpm</div></div>
+          <div class="vb${!sok ? ' bad' : ''}"><div class="vbv${!sok ? ' bad' : ''}">${p.spo2}</div><div class="vbl">SpO₂</div><div class="vbl">%</div></div>
+          <div class="vb${!tok ? ' bad' : ''}"><div class="vbv${!tok ? ' bad' : ''}">${p.temp}</div><div class="vbl">Temp</div><div class="vbl">°C</div></div>
         </div>
       </div>
       <div class="spark">${sp}</div>
     </div>`;
-  }).join('');
-}
+      }).join('');
+    }
 
-function buildAll(){
-  // District table
-  const tot=DIST.reduce((a,x)=>a+x.p,0);
-  document.getElementById('distb').innerHTML=DIST.map(d=>{const pct=Math.round(d.p/tot*100);return`<tr><td>📌 ${d.d}</td><td><strong>${d.p}</strong></td><td><div style="display:flex;align-items:center;gap:6px"><div style="height:6px;border-radius:3px;background:var(--primary);width:${pct*2}px"></div>${pct}%</div></td></tr>`;}).join('');
-  // Heatmap
-  document.getElementById('hmap').innerHTML=FOOTFALL.map(d=>{const r=d.p/d.cap;const bg=r>1.1?'#fee2e2':r>0.9?'#fef3c7':'#dcfce7';const col=r>1.1?'#991b1b':r>0.9?'#92400e':'#166534';return`<div class="hc" style="background:${bg}"><div class="hv" style="color:${col}">${d.p}</div><div class="hn" style="color:${col}">${d.dept}</div><div class="hs" style="color:${col}">Cap:${d.cap} · Wait:${d.w}m</div>${r>1.1?`<div style="font-size:9px;font-weight:700;color:${col};margin-top:4px">⚠ OVERCROWDED</div>`:''}</div>`;}).join('');
-  // Staffing tables
-  const stRow=s=>{const c=s.g<-8?'br':s.g<0?'by':'bg';return`<tr class="${s.g<-8?'wr':''}"><td><strong>${s.d}</strong></td><td>${s.doc}</td><td>${s.nur}</td><td>${s.r.toFixed(1)}</td><td>${s.req.toFixed(1)}</td><td><span class="badge ${c}">${s.g===0?'✓ Met':Math.abs(s.g)+' needed'}</span></td><td style="font-size:11px">${s.g<-8?'🚨 Urgent':s.g<0?'⚠ Next cycle':'✅ OK'}</td></tr>`;};
-  document.getElementById('stb').innerHTML=STAFF.map(stRow).join('');
-  document.getElementById('stb2').innerHTML=STAFF.map(stRow).join('');
-  // Equipment
-  document.getElementById('etb').innerHTML=EQUIP.map(e=>{const sc=e.s==='in_use'?'bg':e.s==='available'?'bb':'br';const sl=e.s==='in_use'?'● In Use':e.s==='available'?'◉ Available':'⚙ Maintenance';const wc=e.w>85?'var(--danger)':e.w>65?'var(--warn)':'var(--ok)';return`<tr class="${e.a?'wr':''}"><td><strong>${e.n}</strong>${e.a?' <span style="color:var(--danger);font-size:10px">⚠</span>':''}</td><td>${e.d}</td><td><span class="badge ${sc}">${sl}</span></td><td style="font-size:11px">${e.u}h/${e.m}h</td><td><div class="wear"><div class="wf" style="width:${e.w}px;max-width:80px;background:${wc}"></div><span style="font-size:11px;font-weight:600;color:${wc}">${e.w}%</span></div></td><td style="font-size:11px">${e.mt}</td><td>${e.a?`<button class="pobtn" onclick="alert('Maintenance request sent for ${e.n}')">🔔 Schedule</button>`:'—'}</td></tr>`;}).join('');
-  // Pharma
-  renderPharma();
-  // Risk
-  document.getElementById('ritb').innerHTML=READM.map(r=>{const c=r.score>75?'br':'by';return`<tr><td><strong>${r.name}</strong></td><td>${r.dept}</td><td><span style="display:inline-block;height:7px;border-radius:4px;width:${r.score}px;background:${r.score>75?'var(--danger)':'var(--warn)'};margin-right:5px;vertical-align:middle"></span><strong style="color:${r.score>75?'var(--danger)':'var(--warn)'}">${r.score}</strong></td><td><span class="badge ${c}">${r.score>75?'HIGH':'MEDIUM'}</span></td><td style="font-size:11px">${r.reason}</td><td style="font-size:11px;color:var(--primary)">${r.score>75?'📞 Weekly telehealth + med review':'📋 Monthly follow-up + counselling'}</td></tr>`;}).join('');
-  // Charts
-  new Chart(document.getElementById('cadm'),{type:'line',data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Admissions',data:[42,55,38,61,49,33,28],borderColor:'#004a99',borderWidth:2,tension:.4,pointRadius:4,fill:false},{label:'Discharges',data:[38,41,44,52,47,29,31],borderColor:'#16a34a',borderWidth:2,tension:.4,pointRadius:4,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
-  new Chart(document.getElementById('cdis'),{type:'doughnut',data:{labels:['Cardiovascular','Respiratory','Dengue','Orthopaedic','Neurological','Renal','Oncology','Others'],datasets:[{data:[22,16,13,12,10,9,8,10],backgroundColor:['#e74c3c','#3498db','#f39c12','#2ecc71','#9b59b6','#1abc9c','#e67e22','#95a5a6']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:9},boxWidth:10}}}}});
-  new Chart(document.getElementById('cage'),{type:'bar',data:{labels:['0–14','15–29','30–44','45–59','60–74','75+'],datasets:[{label:'Patients',data:[78,62,91,124,98,36],backgroundColor:'#0077cc',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
-  new Chart(document.getElementById('cfoot'),{type:'bar',data:{labels:FOOTFALL.map(d=>d.dept),datasets:[{label:'Patients',data:FOOTFALL.map(d=>d.p),backgroundColor:FOOTFALL.map(d=>d.p>d.cap?'#dc2626':d.p/d.cap>.9?'#d97706':'#0077cc'),borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}}}}}});
-  new Chart(document.getElementById('cwait'),{type:'bar',data:{labels:FOOTFALL.map(d=>d.dept),datasets:[{label:'Wait (min)',data:FOOTFALL.map(d=>d.w),backgroundColor:'#0097a7',borderRadius:4}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}}}}}});
-  new Chart(document.getElementById('cphar'),{type:'bar',data:{labels:PHARMA.map(d=>d.drug),datasets:[{label:'Daily Burn',data:PHARMA.map(d=>d.b),backgroundColor:'#0097a7',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},maxRotation:30}},y:{ticks:{font:{size:10}}}}}});
-  const hl=['Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec',"Jan'26"];
-  const ha=[1280,1340,1410,1390,1460,1510,null,null,null,null,null,null];
-  const fa=[null,null,null,null,null,1510,1420,1380,1510,1650,1720,1580];
-  new Chart(document.getElementById('cfor'),{type:'line',data:{labels:hl,datasets:[{label:'Historical',data:ha,borderColor:'#004a99',borderWidth:2,tension:.4,pointRadius:4,fill:false,spanGaps:false},{label:'AI Forecast',data:fa,borderColor:'#0097a7',borderWidth:2,borderDash:[5,3],tension:.4,pointRadius:4,fill:false,spanGaps:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{ticks:{font:{size:10}}},y:{min:1100,ticks:{font:{size:10}}}}}});
-}
+    function buildAll() {
+      // District table
+      const tot = DIST.reduce((a, x) => a + x.p, 0);
+      document.getElementById('distb').innerHTML = DIST.map(d => { const pct = Math.round(d.p / tot * 100); return `<tr><td>📌 ${d.d}</td><td><strong>${d.p}</strong></td><td><div style="display:flex;align-items:center;gap:6px"><div style="height:6px;border-radius:3px;background:var(--primary);width:${pct * 2}px"></div>${pct}%</div></td></tr>`; }).join('');
+      // Heatmap
+      document.getElementById('hmap').innerHTML = FOOTFALL.map(d => { const r = d.p / d.cap; const bg = r > 1.1 ? '#fee2e2' : r > 0.9 ? '#fef3c7' : '#dcfce7'; const col = r > 1.1 ? '#991b1b' : r > 0.9 ? '#92400e' : '#166534'; return `<div class="hc" style="background:${bg}"><div class="hv" style="color:${col}">${d.p}</div><div class="hn" style="color:${col}">${d.dept}</div><div class="hs" style="color:${col}">Cap:${d.cap} · Wait:${d.w}m</div>${r > 1.1 ? `<div style="font-size:9px;font-weight:700;color:${col};margin-top:4px">⚠ OVERCROWDED</div>` : ''}</div>`; }).join('');
+      // Staffing tables
+      const stRow = s => { const c = s.g < -8 ? 'br' : s.g < 0 ? 'by' : 'bg'; return `<tr class="${s.g < -8 ? 'wr' : ''}"><td><strong>${s.d}</strong></td><td>${s.doc}</td><td>${s.nur}</td><td>${s.r.toFixed(1)}</td><td>${s.req.toFixed(1)}</td><td><span class="badge ${c}">${s.g === 0 ? '✓ Met' : Math.abs(s.g) + ' needed'}</span></td><td style="font-size:11px">${s.g < -8 ? '🚨 Urgent' : s.g < 0 ? '⚠ Next cycle' : '✅ OK'}</td></tr>`; };
+      document.getElementById('stb').innerHTML = STAFF.map(stRow).join('');
+      document.getElementById('stb2').innerHTML = STAFF.map(stRow).join('');
+      // Equipment
+      document.getElementById('etb').innerHTML = EQUIP.map(e => { const sc = e.s === 'in_use' ? 'bg' : e.s === 'available' ? 'bb' : 'br'; const sl = e.s === 'in_use' ? '● In Use' : e.s === 'available' ? '◉ Available' : '⚙ Maintenance'; const wc = e.w > 85 ? 'var(--danger)' : e.w > 65 ? 'var(--warn)' : 'var(--ok)'; return `<tr class="${e.a ? 'wr' : ''}"><td><strong>${e.n}</strong>${e.a ? ' <span style="color:var(--danger);font-size:10px">⚠</span>' : ''}</td><td>${e.d}</td><td><span class="badge ${sc}">${sl}</span></td><td style="font-size:11px">${e.u}h/${e.m}h</td><td><div class="wear"><div class="wf" style="width:${e.w}px;max-width:80px;background:${wc}"></div><span style="font-size:11px;font-weight:600;color:${wc}">${e.w}%</span></div></td><td style="font-size:11px">${e.mt}</td><td>${e.a ? `<button class="pobtn" onclick="alert('Maintenance request sent for ${e.n}')">🔔 Schedule</button>` : '—'}</td></tr>`; }).join('');
+      // Pharma
+      renderPharma();
+      // Risk
+      document.getElementById('ritb').innerHTML = READM.map(r => { const c = r.score > 75 ? 'br' : 'by'; return `<tr><td><strong>${r.name}</strong></td><td>${r.dept}</td><td><span style="display:inline-block;height:7px;border-radius:4px;width:${r.score}px;background:${r.score > 75 ? 'var(--danger)' : 'var(--warn)'};margin-right:5px;vertical-align:middle"></span><strong style="color:${r.score > 75 ? 'var(--danger)' : 'var(--warn)'}">${r.score}</strong></td><td><span class="badge ${c}">${r.score > 75 ? 'HIGH' : 'MEDIUM'}</span></td><td style="font-size:11px">${r.reason}</td><td style="font-size:11px;color:var(--primary)">${r.score > 75 ? '📞 Weekly telehealth + med review' : '📋 Monthly follow-up + counselling'}</td></tr>`; }).join('');
+      // Charts
+      new Chart(document.getElementById('cadm'), { type: 'line', data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], datasets: [{ label: 'Admissions', data: [42, 55, 38, 61, 49, 33, 28], borderColor: '#004a99', borderWidth: 2, tension: .4, pointRadius: 4, fill: false }, { label: 'Discharges', data: [38, 41, 44, 52, 47, 29, 31], borderColor: '#16a34a', borderWidth: 2, tension: .4, pointRadius: 4, fill: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { ticks: { font: { size: 10 } } } } } });
+      new Chart(document.getElementById('cdis'), { type: 'doughnut', data: { labels: ['Cardiovascular', 'Respiratory', 'Dengue', 'Orthopaedic', 'Neurological', 'Renal', 'Oncology', 'Others'], datasets: [{ data: [22, 16, 13, 12, 10, 9, 8, 10], backgroundColor: ['#e74c3c', '#3498db', '#f39c12', '#2ecc71', '#9b59b6', '#1abc9c', '#e67e22', '#95a5a6'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 9 }, boxWidth: 10 } } } } });
+      new Chart(document.getElementById('cage'), { type: 'bar', data: { labels: ['0–14', '15–29', '30–44', '45–59', '60–74', '75+'], datasets: [{ label: 'Patients', data: [78, 62, 91, 124, 98, 36], backgroundColor: '#0077cc', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { ticks: { font: { size: 10 } } } } } });
+      new Chart(document.getElementById('cfoot'), { type: 'bar', data: { labels: FOOTFALL.map(d => d.dept), datasets: [{ label: 'Patients', data: FOOTFALL.map(d => d.p), backgroundColor: FOOTFALL.map(d => d.p > d.cap ? '#dc2626' : d.p / d.cap > .9 ? '#d97706' : '#0077cc'), borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 } } } } } });
+      new Chart(document.getElementById('cwait'), { type: 'bar', data: { labels: FOOTFALL.map(d => d.dept), datasets: [{ label: 'Wait (min)', data: FOOTFALL.map(d => d.w), backgroundColor: '#0097a7', borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 } } }, y: { ticks: { font: { size: 9 } } } } } });
+      new Chart(document.getElementById('cphar'), { type: 'bar', data: { labels: PHARMA.map(d => d.drug), datasets: [{ label: 'Daily Burn', data: PHARMA.map(d => d.b), backgroundColor: '#0097a7', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 9 }, maxRotation: 30 } }, y: { ticks: { font: { size: 10 } } } } } });
+      const hl = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', "Jan'26"];
+      const ha = [1280, 1340, 1410, 1390, 1460, 1510, null, null, null, null, null, null];
+      const fa = [null, null, null, null, null, 1510, 1420, 1380, 1510, 1650, 1720, 1580];
+      new Chart(document.getElementById('cfor'), { type: 'line', data: { labels: hl, datasets: [{ label: 'Historical', data: ha, borderColor: '#004a99', borderWidth: 2, tension: .4, pointRadius: 4, fill: false, spanGaps: false }, { label: 'AI Forecast', data: fa, borderColor: '#0097a7', borderWidth: 2, borderDash: [5, 3], tension: .4, pointRadius: 4, fill: false, spanGaps: false }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { min: 1100, ticks: { font: { size: 10 } } } } } });
+    }
 
-function renderPharma(){
-  document.getElementById('ptb').innerHTML=PHARMA.map(d=>{const dc=d.days<5?'var(--danger)':d.days<7?'var(--warn)':'var(--ok)';const sent=poList.includes(d.drug);const act=d.crit?(sent?'<span class="posent">✅ PO Sent</span>':`<button class="pobtn" onclick="sendPO('${d.drug}')">🛒 Auto PO</button>`):'—';return`<tr class="${d.crit?'wr':''}"><td><strong>${d.drug}</strong></td><td>${d.cat}</td><td>${d.stk.toLocaleString()}</td><td>${d.b}/d</td><td><strong style="color:${dc}">${d.days.toFixed(1)}d</strong></td><td><span class="badge ${d.crit?'br':'bg'}">${d.crit?'⚠ Critical':'✓ OK'}</span></td><td>${act}</td></tr>`;}).join('');
-}
-function sendPO(drug){
-  if(!poList.includes(drug))poList.push(drug);
-  document.getElementById('poc').textContent=poList.length;
-  const s=document.getElementById('posuc');s.style.display='block';
-  s.innerHTML='<strong>✅ Purchase Orders Generated:</strong> '+poList.join(', ')+' — submitted to procurement system';
-  renderPharma();
-}
+    function renderPharma() {
+      document.getElementById('ptb').innerHTML = PHARMA.map(d => { const dc = d.days < 5 ? 'var(--danger)' : d.days < 7 ? 'var(--warn)' : 'var(--ok)'; const sent = poList.includes(d.drug); const act = d.crit ? (sent ? '<span class="posent">✅ PO Sent</span>' : `<button class="pobtn" onclick="sendPO('${d.drug}')">🛒 Auto PO</button>`) : '—'; return `<tr class="${d.crit ? 'wr' : ''}"><td><strong>${d.drug}</strong></td><td>${d.cat}</td><td>${d.stk.toLocaleString()}</td><td>${d.b}/d</td><td><strong style="color:${dc}">${d.days.toFixed(1)}d</strong></td><td><span class="badge ${d.crit ? 'br' : 'bg'}">${d.crit ? '⚠ Critical' : '✓ OK'}</span></td><td>${act}</td></tr>`; }).join('');
+    }
+    function sendPO(drug) {
+      if (!poList.includes(drug)) poList.push(drug);
+      document.getElementById('poc').textContent = poList.length;
+      const s = document.getElementById('posuc'); s.style.display = 'block';
+      s.innerHTML = '<strong>✅ Purchase Orders Generated:</strong> ' + poList.join(', ') + ' — submitted to procurement system';
+      renderPharma();
+    }
 
-// Check Web Bluetooth support on load
-if(!isWebBTAvailable()){
-  console.warn("Web Bluetooth API not available. Live smartwatch integration disabled. Use Chrome/Edge on HTTPS or localhost.");
-}
-</script>
+    // Check Web Bluetooth support on load — show banner if unsupported
+    if (!isWebBTAvailable()) {
+      const b = document.getElementById('btUnsupported');
+      if (b) b.style.display = 'block';
+      const btn = document.getElementById('btBtn');
+      if (btn) { btn.title = 'Web Bluetooth not available in this browser'; }
+    }
+  </script>
 </body>
+
 </html>
