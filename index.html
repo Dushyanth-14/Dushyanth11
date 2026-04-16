@@ -1016,7 +1016,7 @@
               <div style="flex:1">
                 <div style="font-size:13px;font-weight:600;color:var(--dark);margin-bottom:4px">🔗 Smartwatch / BLE
                   Integration</div>
-                <div style="font-size:11px;color:var(--muted)">Connect any BLE smartwatch or HR monitor · Live HR feeds
+                <div style="font-size:11px;color:var(--muted)">Connect any BLE smartwatch or HR/SpO₂ monitor · Live HR & SpO₂ feeds
                   into Patient Rajendran K.</div>
               </div>
               <button class="bt-btn" id="btBtn" onclick="connectWatch()">
@@ -1053,7 +1053,7 @@
                 ✅ <strong>OS Bluetooth:</strong> Must be enabled in Windows Settings → Bluetooth<br>
                 ℹ️ Click "Connect Smartwatch" → browser shows a device picker → select your watch → pair<br>
                 ℹ️ If your watch isn't listed, make sure it is in pairing/broadcasting mode<br>
-                ℹ️ Real-time HR overrides simulation for Patient P-1042 (Rajendran K.)
+                ℹ️ Real-time HR & SpO₂ overrides simulation for Patient P-1042 (Rajendran K.)
               </div>
             </div>
           </div>
@@ -1300,6 +1300,8 @@
     let btServer = null;
     let btCharacteristic = null;
     let btConnected = false;
+    let btHRFound = false;
+    let btSpO2Found = false;
     let btDeviceName = "";
 
     function showToast(msg, type = "info") {
@@ -1343,15 +1345,19 @@
         return;
       }
       btConnected = true;
+      btHRFound = true;
+      btSpO2Found = true;
       btDeviceName = 'Simulated Watch';
       updateBTStatus('simulated', '🎮 Simulated BLE Active');
       document.getElementById('simBtn').innerHTML = '<span>⏹</span> Stop Simulation';
       document.getElementById('btBtn').disabled = true;
-      showToast('BLE simulation started — HR data now live for Rajendran K.', 'success');
+      showToast('BLE simulation started — HR & SpO₂ data now live for Rajendran K.', 'success');
       simInterval = setInterval(() => {
         const hr = Math.round(72 + (Math.random() - .5) * 30);
+        const spo2 = Math.min(100, Math.round(96 + (Math.random() - .5) * 5));
         if (lpts.length > 0) {
           lpts[0].hr = Math.max(45, Math.min(130, hr));
+          lpts[0].spo2 = Math.max(70, spo2);
           lpts[0].btSource = true;
           if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
         }
@@ -1373,36 +1379,73 @@
         // acceptAllDevices so ANY BLE smartwatch (Noise, boAt, Mi Band, etc.) appears in picker
         btDevice = await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
-          optionalServices: ['heart_rate', '0000180d-0000-1000-8000-00805f9b34fb']
+          optionalServices: [
+            'heart_rate', '0000180d-0000-1000-8000-00805f9b34fb',
+            'pulse_oximeter', '00001822-0000-1000-8000-00805f9b34fb'
+          ]
         });
         btDeviceName = btDevice.name || 'Unknown Device';
         updateBTStatus('scanning', 'Connecting to ' + btDeviceName + '...');
         btDevice.addEventListener('gattserverdisconnected', onBTDisconnect);
         btServer = await btDevice.gatt.connect();
-        // Try standard HR service first, then fall back
-        let service;
+
+        // HR GATT
+        let hrFound = false;
         try {
-          service = await btServer.getPrimaryService('heart_rate');
-          btCharacteristic = await service.getCharacteristic('heart_rate_measurement');
+          let hrService = await btServer.getPrimaryService('heart_rate');
+          btCharacteristic = await hrService.getCharacteristic('heart_rate_measurement');
           await btCharacteristic.startNotifications();
           btCharacteristic.addEventListener('characteristicvaluechanged', handleHRValue);
+          hrFound = true;
+        } catch (svcErr) {
+          console.log("HR service not found:", svcErr);
+        }
+
+        // SpO2 GATT
+        let spo2Found = false;
+        try {
+          let spo2Service = await btServer.getPrimaryService('pulse_oximeter');
+          let spo2Char = await spo2Service.getCharacteristic('plx_continuous_measurement'); 
+          await spo2Char.startNotifications();
+          spo2Char.addEventListener('characteristicvaluechanged', handleSpO2Value);
+          spo2Found = true;
+        } catch (svcErr) {
+          try {
+             let spo2Service = await btServer.getPrimaryService('pulse_oximeter');
+             let spo2Char = await spo2Service.getCharacteristic('plx_spot_check_measurement'); 
+             await spo2Char.startNotifications();
+             spo2Char.addEventListener('characteristicvaluechanged', handleSpO2Value);
+             spo2Found = true;
+          } catch(e) {
+             console.log("SpO2 service not found:", e);
+          }
+        }
+
+        btHRFound = hrFound;
+        btSpO2Found = spo2Found;
+
+        if (hrFound || spo2Found) {
           btConnected = true;
           updateBTStatus('connected', 'Connected: ' + btDeviceName);
-          showToast('Connected to ' + btDeviceName + ' via HR GATT', 'success');
+          let msg = hrFound && spo2Found ? 'HR & SpO2 GATT' : (hrFound ? 'HR GATT' : 'SpO2 GATT');
+          showToast('Connected to ' + btDeviceName + ' via ' + msg, 'success');
           document.getElementById('btBtn').innerHTML = '<span>✓</span> Connected';
-        } catch (svcErr) {
-          // Device connected but doesn't expose HR GATT — start simulation driven by BLE presence
+        } else {
+          // Device connected but doesn't expose HR or SpO2 GATT — start simulation driven by BLE presence
           btConnected = true;
-          updateBTStatus('connected', 'Connected: ' + btDeviceName + ' (sim HR)');
-          showToast(btDeviceName + ' connected! HR profile not found — using simulated HR data.', 'success');
+          btHRFound = true;
+          btSpO2Found = true;
+          updateBTStatus('connected', 'Connected: ' + btDeviceName + ' (sim vitals)');
+          showToast(btDeviceName + ' connected! Vitals profile not found — using simulated data.', 'success');
           document.getElementById('btBtn').innerHTML = '<span>✓</span> Connected';
-          // Auto-start simulation since device is paired
           if (!simInterval) {
             document.getElementById('simBtn').innerHTML = '<span>⏹</span> Stop Simulation';
             simInterval = setInterval(() => {
               const hr = Math.round(75 + (Math.random() - .5) * 25);
+              const spo2 = Math.min(100, Math.round(96 + (Math.random() - .5) * 4));
               if (lpts.length > 0) {
                 lpts[0].hr = Math.max(45, Math.min(130, hr));
+                lpts[0].spo2 = Math.max(70, spo2);
                 lpts[0].btSource = true;
                 if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
               }
@@ -1422,6 +1465,8 @@
     function onBTDisconnect() {
       if (simInterval) { clearInterval(simInterval); simInterval = null; }
       btConnected = false;
+      btHRFound = false;
+      btSpO2Found = false;
       btDevice = null;
       btServer = null;
       btCharacteristic = null;
@@ -1442,6 +1487,23 @@
         if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
       }
       console.log('BLE HR reading:', hr, 'bpm');
+    }
+
+    function handleSpO2Value(event) {
+      const value = event.target.value;
+      const raw = value.getUint16(1, true);
+      let mantissa = raw & 0x0FFF;
+      if (mantissa >= 0x0800) mantissa = mantissa - 0x1000;
+      let exp = raw >> 12;
+      if (exp >= 0x08) exp = exp - 0x10;
+      let spo2 = mantissa * Math.pow(10, exp);
+      
+      if (lpts.length > 0) {
+        lpts[0].spo2 = Math.round(spo2);
+        lpts[0].btSource = true;
+        if (document.getElementById('page-telemetry').classList.contains('active')) renderTele();
+      }
+      console.log('BLE SpO2 reading:', spo2, '%');
     }
 
     function onRC() {
@@ -1478,6 +1540,8 @@
       ['irole', 'idept', 'iemail', 'ipw'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('lerr').style.display = 'none';
       btConnected = false;
+      btHRFound = false;
+      btSpO2Found = false;
       btDevice = null;
     }
 
@@ -1512,11 +1576,14 @@
       document.getElementById('bedocc').textContent = kOcc;
       document.getElementById('bbocc').style.width = pct + '%';
 
-      // Update patients: if Bluetooth connected, skip first patient HR (use real data)
+      // Update patients: if Bluetooth connected, skip first patient HR/SpO2 (use real data) if found
       lpts = lpts.map((p, idx) => {
         if (idx === 0 && btConnected) {
-          // Keep HR from Bluetooth, simulate other vitals
-          return { ...p, spo2: Math.min(100, Math.round(p.spo2 + (Math.random() - .5) * 2)), temp: +(p.temp + (Math.random() - .5) * .4).toFixed(1) };
+          // Keep HR/SpO2 from Bluetooth if found, simulate others
+          let newHR = btHRFound ? p.hr : Math.round(p.hr + (Math.random() - .5) * 8);
+          let newSpO2 = btSpO2Found ? p.spo2 : Math.min(100, Math.round(p.spo2 + (Math.random() - .5) * 2));
+          let newTemp = +(p.temp + (Math.random() - .5) * .4).toFixed(1);
+          return { ...p, hr: newHR, spo2: newSpO2, temp: newTemp };
         } else {
           // Simulate all vitals
           return { ...p, hr: Math.round(p.hr + (Math.random() - .5) * 8), spo2: Math.min(100, Math.round(p.spo2 + (Math.random() - .5) * 2)), temp: +(p.temp + (Math.random() - .5) * .4).toFixed(1) };
